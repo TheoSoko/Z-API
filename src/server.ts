@@ -1,6 +1,7 @@
 'use strict';
 import Hapi, {Request, ResponseToolkit} from '@hapi/hapi'
-import { search } from './controllers/search'
+import search from './controllers/searchCtrl'
+import userCtrl from './controllers/userCtrl'
 
 //Gestion d'erreur à l'initialisation 
 process.on('unhandledRejection', (err) => {console.log(err);process.exit(1)})
@@ -16,7 +17,7 @@ const init = async () => {
     })
 
 
-    // ROUTES .
+    /*  ROUTES  */
 
     // Recherche
     server.route(
@@ -32,28 +33,28 @@ const init = async () => {
         [
             {
                 method: 'GET',
-                path: '/userss',
-                handler: getUsers
+                path: '/users/sign-in',
+                handler: new userCtrl().userSignIn
             },
             {
                 method: 'POST',
                 path: '/users',
-                handler: createUser
+                handler: new userCtrl().createUser
             },
             {
                 method: 'GET',
                 path: '/users/{id}',
-                handler: getUserByID
+                handler: new userCtrl().getUserById
             },
             {
                 method: 'PATCH',
                 path: '/users/{id}',
-                handler: updateUser
+                handler: new userCtrl().updateUser
             },
             {
                 method: 'DELETE',
                 path: '/users/{id}',
-                handler: deleteUser
+                handler: new userCtrl().deleteUser
             },
         ]
     )
