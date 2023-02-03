@@ -16,7 +16,7 @@ const init = async () => {
     })
 
 
-    // ROUTES
+    // ROUTES S
 
     // Recherche
     server.route(
