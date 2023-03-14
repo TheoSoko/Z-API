@@ -1,7 +1,11 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import argon2 from 'argon2'
-import { userProperties } from '../basicObjects/basicObjects'
-import { UserProperties } from '../types/types'
+import boom from '@hapi/boom'
+import { UserType } from '../types/classTypes'
+import User from '../models/userModel'
+import errorDictionnary from '../utils/errorDictionnary'
+import Validation from '../utils/validation'
+
 
 export default class userCtrl {
 
@@ -12,7 +16,6 @@ export default class userCtrl {
 
         if (!query.email || !query.password){
             returnValue = h.response().code(400)
-
         }
 
         let userInfo = 'dbFetchUser(query.email, query.password)'
@@ -27,33 +30,32 @@ export default class userCtrl {
     }
 
 
-    public async createUser (request: Request, h: ResponseToolkit){
-        let returnValue
-        let failed:boolean = false
-        let query = request.query
+    public async createUser (req: Request, h: ResponseToolkit){
+        let query = req.query
 
-        //vérifie qu'il y a tous les params nécessaires
-        //Ne récupère que les params qui correspondent
-        for (const key in userProperties){
-            if (query.hasOwnProperty(key)){
-                userProperties[key as keyof UserProperties] = query[key]
-            } else {
-                returnValue = h.response('Toutes les informations nécessaires n\'ont pas été fournies').code(400)
-                failed = true
-                break
-            }
-        }
+        let val = new Validation()
+        let errors = val.validator(query as UserType, val.userValidation)
+        
+        /*
+        query.password = await argon2.hash(query.password)
 
-        /** MANQUE LA VALIDATION ICI **/
-
-
-        if (!failed){
-            userProperties.password = await argon2.hash(query.password)
-            returnValue = 'dbCreateUser()'
-        }
-
-        return returnValue
+        const response = await new User()
+            .createUser(query as UserType)
+            .then(result => {
+                return {
+                    id: result,
+                    newRessource: `../users/${result}`
+                }
+            })
+            .catch((err: {code: string}) => {
+                    return errorDictionnary[err.code] || errorDictionnary.unidentified
+            })
+        
+        return response
+        */
+       return errors
     }
+
 
 
     public async getUserById (request: Request, h: ResponseToolkit){
@@ -62,30 +64,21 @@ export default class userCtrl {
         return 'dbGetUserById(userId)'
     }
 
-    
-    public async updateUser (request: Request, h: ResponseToolkit){
+
+
+    public async updateUser (req: Request, h: ResponseToolkit){
         let returnValue
-        let query = request.query
-        let userId = request.params.id
+        let userId = req.params.id
+        let query = req.query
 
-        //Ne récupère que les params qui correspondent
-        for (const key in userProperties){
-            if (query.hasOwnProperty(key)){
-                userProperties[key as keyof UserProperties] = query[key]
-            }
-        }
-
-        /** MANQUE LA VALIDATION ICI **/
- 
 
         if (query.password != null){
-            userProperties.password = await argon2.hash(query.password)
-            returnValue = 'dbUpdateUser(userId, userProperties)'
+            query.password = await argon2.hash(query.password)
+            returnValue = 'dbUpdateUser(userId, query)'
         }
 
         return returnValue
     }
-
 
 
     public async deleteUser (request: Request, h: ResponseToolkit){

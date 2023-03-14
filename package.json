@@ -24,8 +24,12 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
+    "@hapi/boom": "^10.0.1",
     "@hapi/hapi": "^21.2.1",
+    "@types/boom": "^7.3.2",
     "@types/hapi": "^18.0.8",
-    "argon2": "^0.30.3"
+    "argon2": "^0.30.3",
+    "knex": "^2.4.2",
+    "mysql": "^2.18.1"
   }
 }

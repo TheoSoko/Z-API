@@ -32,7 +32,7 @@ const init = async () => {
     server.route(
         [
             {
-                method: 'GET',
+                method: 'POST',
                 path: '/users/sign-in',
                 handler: new userCtrl().userSignIn
             },
@@ -59,6 +59,7 @@ const init = async () => {
         ]
     )
 
+/*
     // Amis
     server.route(
         [
@@ -176,6 +177,8 @@ const init = async () => {
             handler: getCountryLanguage
         }
     )
+
+*/
 
     await server.start();
     console.log(`Le serveur court à l\'adresse ${server.info.uri}`);

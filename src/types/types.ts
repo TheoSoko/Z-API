@@ -1,14 +1,7 @@
 export type SearchValues = {
-    q: String | null,
-    country: String | null,
-    image: Boolean | null,
-    sort: String | null
+    q: string | null,
+    country: string | null,
+    image: boolean | null,
+    sort: string | null
 }
 
-export type UserProperties = {
-    firstname : String | null,
-    lastname : String | null,
-    email : String | null,
-    country : String | null,
-    password : String | null
-}
