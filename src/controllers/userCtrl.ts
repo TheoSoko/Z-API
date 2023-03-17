@@ -1,7 +1,8 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import argon2 from 'argon2'
 import boom from '@hapi/boom'
-import { UserType } from '../types/classTypes'
+import { UserType } from '../types/queryTypes'
+import { UnkownIterable } from '../types/types'
 import User from '../models/userModel'
 import errorDictionnary from '../utils/errorDictionnary'
 import Validation from '../utils/validation'
@@ -10,7 +11,8 @@ import Validation from '../utils/validation'
 export default class userCtrl {
 
 
-    public async userSignIn (request: Request, h: ResponseToolkit){
+    public async userSignIn (request: Request, h: ResponseToolkit)
+    {
         let returnValue
         let query = request.query
 
@@ -30,17 +32,26 @@ export default class userCtrl {
     }
 
 
-    public async createUser (req: Request, h: ResponseToolkit){
-        let query = req.query
+    public async createUser (req: Request, h: ResponseToolkit)
+    {
+        let payload = req.payload as UnkownIterable
 
         let val = new Validation()
-        let errors = val.validator(query as UserType, val.userValidation)
-        
-        /*
-        query.password = await argon2.hash(query.password)
+        let errors = val.validator(payload , val.createUserValidation)
+        if (errors.length > 0){
+            return errors
+        }
 
-        const response = await new User()
-            .createUser(query as UserType)
+        let user = new User()
+
+        let previous = await user.fetchUserByEmail((payload as UserType).email).then(res => res)
+        if (previous !== undefined){
+            return 'Un utilisateur avec cette adresse email existe déjà.'
+        }
+        
+        payload.password = await argon2.hash((payload as UserType).password)
+        const response = await user
+            .createUser(payload as UserType)
             .then(result => {
                 return {
                     id: result,
@@ -48,25 +59,29 @@ export default class userCtrl {
                 }
             })
             .catch((err: {code: string}) => {
-                    return errorDictionnary[err.code] || errorDictionnary.unidentified
+                return errorDictionnary[err.code] || errorDictionnary.unidentified
             })
-        
+
         return response
-        */
-       return errors
     }
 
 
 
-    public async getUserById (request: Request, h: ResponseToolkit){
-        let failed:boolean = false
-        let userId = request.params.id
-        return 'dbGetUserById(userId)'
+    public async getUserById (request: Request, h: ResponseToolkit)
+    {
+        let id = request.params.id
+        let user = new User()
+        return await user.fetchUser(id)
+                .then((result) => result)
+                .catch((err: {code: string}) => {
+                    return errorDictionnary[err.code] || errorDictionnary.unidentified
+                })
     }
 
 
 
-    public async updateUser (req: Request, h: ResponseToolkit){
+    public async updateUser (req: Request, h: ResponseToolkit)
+    {
         let returnValue
         let userId = req.params.id
         let query = req.query
@@ -81,7 +96,8 @@ export default class userCtrl {
     }
 
 
-    public async deleteUser (request: Request, h: ResponseToolkit){
+    public async deleteUser (request: Request, h: ResponseToolkit)
+    {
         let failed:boolean = false
         let userId = request.params.id
         return 'dbDeleteUser(userId)'

@@ -5,3 +5,4 @@ export type SearchValues = {
     sort: string | null
 }
 
+export type UnkownIterable = {[key:string] : unknown}

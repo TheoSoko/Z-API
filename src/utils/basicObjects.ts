@@ -1,4 +1,4 @@
-import { UserType } from '../types/classTypes'
+import { UserType } from '../types/queryTypes'
 
 /*
 export const queryUser: UserType = {

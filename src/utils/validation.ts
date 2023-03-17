@@ -1,10 +1,13 @@
-import { UserType } from '../types/classTypes'
+import { UserType } from '../types/queryTypes'
+import { UnkownIterable } from '../types/types'
 import User from '../models/userModel'
 
 type Prop<T> = keyof T
 type Option<T> = T[keyof T]
-type Iterable = { [key: string] : any }
-type checkFunc = (inputValue: string, property: string, optionValue: any) => boolean
+type ValidateFunctions = { 
+    [key: string] : checkFunc 
+}
+type checkFunc = (inputValue: string, propertyName: string, optionValue: any) => string | void
 type ValidationModel = {
     [property: string] : {
         [option: string] : string | number | RegExp | boolean
@@ -14,25 +17,26 @@ type ValidationModel = {
 export default class Validation  {
 
     //Dictionnaire des fonctions 
-    public validateFunctions:Iterable = {
-        'maxLength': this.checkLength,
-        'regex': this.checkRegex
+    public validateFunctions:ValidateFunctions = {
+        'maxLength': this.checkMaxLength,
+        'regex': this.checkRegex,
+        'required': () => {}
     }
 
     // Fonctions de validation individuelle
-    private checkLength (value: string, prop: string, max: number): string | void{
-        if (value.length > max){
-            return `Le champs ${prop} ne doit pas dépasser ${max} caractères`
+    private checkMaxLength (value:string, name: string, max: number): string | void{
+        if (value && value.length > max){
+            return `Le champs "${name}" ne doit pas dépasser ${max} caractères`
         }
     }
-    private checkRegex (value:string, prop: string, regex:RegExp): string | void {
-        if (!value.match(regex)){
-            return `Le champs ${prop} est invalide`
+    private checkRegex (value:string, name: string, regex:RegExp): string | void {
+        if (value && !value.match(regex)){
+            return `Le champs "${name}" est invalide`
         }
     }
 
     // Propriétés utilisateur
-    public userValidation = {
+    public createUserValidation = {
         firstname: {
             required: true,
             maxLength: 255,
@@ -41,33 +45,49 @@ export default class Validation  {
             required: true,
             maxLength: 255,
         },
-        email: { regex: /^[\w-\.]{1,64}@[\w-]{1,251}\.[\w-]{2,4}$/ },
-        password: { regex: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&µ£\/\\~|\-])[\wÀ-ÖØ-öø-ÿ@$!%*#?&µ£\/\\~|\-]{8,70}$/ },
-        country: { required: true},
+        email: { 
+            required: true,
+            regex: /^[\w-\.]{1,64}@[\w-]{1,251}\.[\w-]{2,4}$/,
+        },
+        password: { 
+            required: true,
+            regex: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&µ£\/\\~|\-])[\wÀ-ÖØ-öø-ÿ@$!%*#?&µ£\/\\~|\-]{8,100}$/ 
+        },
+        country: { 
+            required: true
+        },
     }
 
- 
 
-    public validator = (input: UserType, validationModel:ValidationModel):string[] => {
+
+    public validator = (input: UnkownIterable, validMod:ValidationModel):string[] => {
         let errors:string[] = []
-        let expected = validationModel
+        type modelKeys = keyof typeof validMod
 
-        for (const key in expected){
-            let prop = expected[key as Prop<typeof expected>]
-            if (key in input){
-                // ♪ ♫ ♪
-                for (const option in prop){
-                    let func:checkFunc = this.validateFunctions[option]
-                    if (func !== undefined){ // pour les required
-                        let err = func(input[key], key, prop[option as Prop<typeof prop>])
-                        err && errors.push(String(err))
-                    }
-                }
-                // ♪ ♫ ♪
-            } else {
-                'required' in prop && errors.push(`Le champs ${prop} est requis.`)
+        for (const fieldName in validMod){
+            let options = validMod[fieldName as modelKeys]
+            if (options['required'] && !input[fieldName]){
+                errors.push(`Le champs "${fieldName}" est requis`)
+                continue;
             }
+            if (typeof input[fieldName] !== 'string'){
+                errors.push(`Le champs "${fieldName}" est mal formaté`)
+                continue;
+            }
+            let value = input[fieldName] as string
+            // ♪ ♫ ♪
+            for (const option in options){         
+                let func = this.validateFunctions[option]
+                let err:string | void = func(value, fieldName, options[option])
+                err && errors.push(err)
+            }
+            // ♪ ♫ ♪
         }
+
+        for (const field in input){
+            !validMod[field] && errors.push(`Le champs ${field} n'est pas sensé exister`)
+        }
+    
         return errors
     }
 
