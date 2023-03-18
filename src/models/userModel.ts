@@ -31,7 +31,7 @@ export default class User implements UserType{
 
     public async fetchUser(id: number):Promise<typeof User.prototype | void>{
         return (
-            await zemusDb.select()
+            await zemusDb.select('lastname', 'firstname', 'email', 'country')
                 .from('users')
                 .where({id: id})
                 .first()
@@ -45,7 +45,7 @@ export default class User implements UserType{
     
     public async fetchUserByEmail(email: string):Promise<typeof User.prototype | void>{
         return (
-            await zemusDb.select()
+            await zemusDb.select('id')
                 .from('users')
                 .where({email: email})
                 .first()
@@ -57,6 +57,17 @@ export default class User implements UserType{
         )
     }
 
-    
+    public async updateUser(id:number, payload: Partial<UserType>):Promise<number>{
+        return (
+            await zemusDb('users')
+            .where({id: id})
+            .update(payload)
+            .then((affectedRows: number) => affectedRows)
+            .catch((err:Error) => { 
+                console.log(err)
+                throw err 
+            })
+    )
+    }
 
 }   

@@ -35,7 +35,7 @@ export default class Validation  {
         }
     }
 
-    // Propriétés utilisateur
+    // Modèles de validation création utilisateur
     public createUserValidation = {
         firstname: {
             required: true,
@@ -45,19 +45,31 @@ export default class Validation  {
             required: true,
             maxLength: 255,
         },
-        email: { 
+        email: {
             required: true,
             regex: /^[\w-\.]{1,64}@[\w-]{1,251}\.[\w-]{2,4}$/,
         },
-        password: { 
+        password: {
             required: true,
             regex: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&µ£\/\\~|\-])[\wÀ-ÖØ-öø-ÿ@$!%*#?&µ£\/\\~|\-]{8,100}$/ 
         },
-        country: { 
+        country: {
             required: true
         },
     }
 
+    private updateUserValid = () => {
+        type Key = keyof typeof this.createUserValidation;
+        let obj = this.createUserValidation 
+        for (const fieldName in obj){
+            let properties = obj[fieldName as Key]
+            let propPartial = properties as Partial<typeof properties>
+            delete propPartial?.required
+        }
+        return obj
+    }
+
+    public updateUserValidation = this.updateUserValid()
 
 
     public validator = (input: UnkownIterable, validMod:ValidationModel):string[] => {
@@ -66,11 +78,11 @@ export default class Validation  {
 
         for (const fieldName in validMod){
             let options = validMod[fieldName as modelKeys]
-            if (options['required'] && !input[fieldName]){
+            if (options['required'] && input[fieldName] == undefined){
                 errors.push(`Le champs "${fieldName}" est requis`)
                 continue;
             }
-            if (typeof input[fieldName] !== 'string'){
+            if (input[fieldName] !== undefined && typeof input[fieldName] !== 'string'){
                 errors.push(`Le champs "${fieldName}" est mal formaté`)
                 continue;
             }

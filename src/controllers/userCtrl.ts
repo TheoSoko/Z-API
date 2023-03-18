@@ -43,7 +43,6 @@ export default class userCtrl {
         }
 
         let user = new User()
-
         let previous = await user.fetchUserByEmail((payload as UserType).email).then(res => res)
         if (previous !== undefined){
             return 'Un utilisateur avec cette adresse email existe déjà.'
@@ -66,7 +65,6 @@ export default class userCtrl {
     }
 
 
-
     public async getUserById (request: Request, h: ResponseToolkit)
     {
         let id = request.params.id
@@ -79,20 +77,29 @@ export default class userCtrl {
     }
 
 
-
     public async updateUser (req: Request, h: ResponseToolkit)
     {
-        let returnValue
+        let payload = req.payload as UnkownIterable
         let userId = req.params.id
-        let query = req.query
 
-
-        if (query.password != null){
-            query.password = await argon2.hash(query.password)
-            returnValue = 'dbUpdateUser(userId, query)'
+        let val = new Validation()
+        let errors = val.validator(payload , val.updateUserValidation)
+        if (errors.length > 0){
+            return errors
         }
 
-        return returnValue
+        if (payload.password != null){
+            payload.password = await argon2.hash((payload as UserType).password)
+        }
+
+       let user = new User()
+       return user.updateUser(userId, payload)
+            .then((res:number) => {
+                return {affectedRows: res}
+            })
+            .catch((err: {code: string}) => {
+                return errorDictionnary[err.code] || errorDictionnary.unidentified
+            })
     }
 
 
