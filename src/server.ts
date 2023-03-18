@@ -27,38 +27,41 @@ const init = async () => {
             handler: search
         }
     )
+    
+    const user = new userCtrl()
 
     // Utilisateurs
     server.route(
         [
             {
-                method: 'GET',
+                method: 'POST',
                 path: '/users/sign-in',
-                handler: new userCtrl().userSignIn
+                handler: user.userSignIn
             },
             {
                 method: 'POST',
                 path: '/users',
-                handler: new userCtrl().createUser
+                handler: user.createUser
             },
             {
                 method: 'GET',
                 path: '/users/{id}',
-                handler: new userCtrl().getUserById
+                handler: user.getUserById
             },
             {
                 method: 'PATCH',
                 path: '/users/{id}',
-                handler: new userCtrl().updateUser
+                handler: user.updateUser
             },
             {
                 method: 'DELETE',
                 path: '/users/{id}',
-                handler: new userCtrl().deleteUser
+                handler: user.deleteUser
             },
         ]
     )
 
+/*
     // Amis
     server.route(
         [
@@ -176,6 +179,8 @@ const init = async () => {
             handler: getCountryLanguage
         }
     )
+
+*/
 
     await server.start();
     console.log(`Le serveur court à l\'adresse ${server.info.uri}`);
