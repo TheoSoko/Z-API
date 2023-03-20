@@ -6,3 +6,12 @@ export type SearchValues = {
 }
 
 export type UnkownIterable = {[key:string] : unknown}
+
+export type ValidationModel = {
+    [property: string] : {
+        [option: string] : string | number | RegExp | boolean
+    }
+}
+
+type Prop<T> = keyof T
+type Option<T> = T[keyof T]

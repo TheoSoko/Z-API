@@ -1,18 +1,10 @@
-import { UserType } from '../types/queryTypes'
-import { UnkownIterable } from '../types/types'
-import User from '../models/userModel'
+import { UnkownIterable, ValidationModel } from '../types/types'
 
-type Prop<T> = keyof T
-type Option<T> = T[keyof T]
+type checkFunc = (inputValue: string, propertyName: string, optionValue: any) => string | void
 type ValidateFunctions = { 
     [key: string] : checkFunc 
 }
-type checkFunc = (inputValue: string, propertyName: string, optionValue: any) => string | void
-type ValidationModel = {
-    [property: string] : {
-        [option: string] : string | number | RegExp | boolean
-    }
-}
+
 
 export default class Validation  {
 
@@ -35,41 +27,6 @@ export default class Validation  {
         }
     }
 
-    // Modèles de validation création utilisateur
-    public createUserValidation = {
-        firstname: {
-            required: true,
-            maxLength: 255,
-        },
-        lastname: {
-            required: true,
-            maxLength: 255,
-        },
-        email: {
-            required: true,
-            regex: /^[\w-\.]{1,64}@[\w-]{1,251}\.[\w-]{2,4}$/,
-        },
-        password: {
-            required: true,
-            regex: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&µ£\/\\~|\-])[\wÀ-ÖØ-öø-ÿ@$!%*#?&µ£\/\\~|\-]{8,100}$/ 
-        },
-        country: {
-            required: true
-        },
-    }
-
-    private updateUserValid = () => {
-        type Key = keyof typeof this.createUserValidation;
-        let obj = this.createUserValidation 
-        for (const fieldName in obj){
-            let properties = obj[fieldName as Key]
-            let propPartial = properties as Partial<typeof properties>
-            delete propPartial?.required
-        }
-        return obj
-    }
-
-    public updateUserValidation = this.updateUserValid()
 
 
     public validator = (input: UnkownIterable, validMod:ValidationModel):string[] => {
