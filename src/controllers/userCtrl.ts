@@ -6,13 +6,12 @@ import { UnkownIterable } from '../types/types'
 import User from '../models/userModel'
 import errorDictionnary from '../utils/errorDictionnary'
 import Validation from '../utils/validation'
-
+import ValidationModels from '../utils/validationModels'
 
 export default class userCtrl {
 
 
-    public async userSignIn (request: Request, h: ResponseToolkit)
-    {
+    public async userSignIn (request: Request, h: ResponseToolkit){
         let returnValue
         let query = request.query
 
@@ -32,20 +31,21 @@ export default class userCtrl {
     }
 
 
-    public async createUser (req: Request, h: ResponseToolkit)
-    {
+    public async createUser (req: Request, h: ResponseToolkit){
         let payload = req.payload as UnkownIterable
-
+        if (!payload){
+            return errorDictionnary.noPayload
+        }
         let val = new Validation()
-        let errors = val.validator(payload , val.createUserValidation)
+        let errors = val.validator(payload , ValidationModels.createUser)
         if (errors.length > 0){
             return errors
         }
 
         let user = new User()
-        let previous = await user.fetchUserByEmail((payload as UserType).email).then(res => res)
-        if (previous !== undefined){
-            return 'Un utilisateur avec cette adresse email existe déjà.'
+        let previous:number|void = await user.fetchUserByEmail((payload as UserType).email).then(res => res)
+        if (previous){
+            return errorDictionnary.existingUser
         }
         
         payload.password = await argon2.hash((payload as UserType).password)
@@ -65,8 +65,7 @@ export default class userCtrl {
     }
 
 
-    public async getUserById (request: Request, h: ResponseToolkit)
-    {
+    public async getUserById (request: Request, h: ResponseToolkit){
         let id = request.params.id
         let user = new User()
         return await user.fetchUser(id)
@@ -77,13 +76,12 @@ export default class userCtrl {
     }
 
 
-    public async updateUser (req: Request, h: ResponseToolkit)
-    {
+    public async updateUser (req: Request, h: ResponseToolkit){
         let payload = req.payload as UnkownIterable
         let userId = req.params.id
 
         let val = new Validation()
-        let errors = val.validator(payload , val.updateUserValidation)
+        let errors = val.validator(payload , ValidationModels.updateUser)
         if (errors.length > 0){
             return errors
         }
@@ -103,11 +101,19 @@ export default class userCtrl {
     }
 
 
-    public async deleteUser (request: Request, h: ResponseToolkit)
-    {
-        let failed:boolean = false
-        let userId = request.params.id
-        return 'dbDeleteUser(userId)'
+    public async deleteUser (request: Request, h: ResponseToolkit){
+        let id = request.params.id
+        if (!parseInt(id)){
+            return boom.badRequest()
+        }
+        let user = new User()
+        return user.deleteUser(id)
+                .then((res:number) => {
+                    return {
+                        affectedRows: res
+                    }
+                })
+                .catch(() => errorDictionnary.unidentified)
     }
 
 

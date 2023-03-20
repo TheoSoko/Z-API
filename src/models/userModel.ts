@@ -15,7 +15,7 @@ export default class User implements UserType{
     }
 
 
-    public async createUser(properties: UserType){
+    public async createUser(properties: UserType):Promise<number>{
         return (
             await zemusDb.insert(
                 properties,
@@ -43,7 +43,7 @@ export default class User implements UserType{
         )
     }
     
-    public async fetchUserByEmail(email: string):Promise<typeof User.prototype | void>{
+    public async fetchUserByEmail(email: string):Promise<number | void>{
         return (
             await zemusDb.select('id')
                 .from('users')
@@ -62,6 +62,19 @@ export default class User implements UserType{
             await zemusDb('users')
             .where({id: id})
             .update(payload)
+            .then((affectedRows: number) => affectedRows)
+            .catch((err:Error) => { 
+                console.log(err)
+                throw err 
+            })
+    )
+    }
+
+    public async deleteUser(id:number):Promise<number>{
+        return (
+            await zemusDb('users')
+            .where({id: id})
+            .del()
             .then((affectedRows: number) => affectedRows)
             .catch((err:Error) => { 
                 console.log(err)
