@@ -16,6 +16,8 @@ const init = async () => {
         host: 'localhost'
     })
 
+    const user = new userCtrl()
+
 
     /*  ROUTES  */
 
@@ -28,8 +30,6 @@ const init = async () => {
         }
     )
     
-    const user = new userCtrl()
-
     // Utilisateurs
     server.route(
         [
