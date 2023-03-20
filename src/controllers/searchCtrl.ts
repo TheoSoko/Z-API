@@ -1,9 +1,9 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
-import { searchQueryValues } from '../types/allTypes'
+import { SearchValues } from '../types/types'
 
-export function search(request: Request, h: ResponseToolkit){
+export default function search(request: Request, h: ResponseToolkit){
 
-    let queryValues:searchQueryValues = {
+    let searchValues:SearchValues = {
         q : null,
         country : null,
         image : null,
@@ -11,13 +11,13 @@ export function search(request: Request, h: ResponseToolkit){
     }
 
     for (const property in request.query){
-        if (queryValues.hasOwnProperty(property)){
-            queryValues[property as keyof searchQueryValues] = request.query[property]
+        if (searchValues.hasOwnProperty(property)){
+            searchValues[property as keyof SearchValues] = request.query[property]
         }
     }
 
     let searchResults = {
-        originalRequestInfo: queryValues,
+        originalRequestInfo: searchValues,
         results: 
             [
                 {

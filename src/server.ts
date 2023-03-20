@@ -1,6 +1,7 @@
 'use strict';
 import Hapi, {Request, ResponseToolkit} from '@hapi/hapi'
-import { search } from './controllers/search'
+import search from './controllers/searchCtrl'
+import userCtrl from './controllers/userCtrl'
 
 //Gestion d'erreur à l'initialisation 
 process.on('unhandledRejection', (err) => {console.log(err);process.exit(1)})
@@ -16,7 +17,7 @@ const init = async () => {
     })
 
 
-    // ROUTES S
+    /*  ROUTES  */
 
     // Recherche
     server.route(
@@ -26,38 +27,41 @@ const init = async () => {
             handler: search
         }
     )
+    
+    const user = new userCtrl()
 
     // Utilisateurs
     server.route(
         [
             {
-                method: 'GET',
-                path: '/userss',
-                handler: getUsers
+                method: 'POST',
+                path: '/users/sign-in',
+                handler: user.userSignIn
             },
             {
                 method: 'POST',
                 path: '/users',
-                handler: createUser
+                handler: user.createUser
             },
             {
                 method: 'GET',
                 path: '/users/{id}',
-                handler: getUserByID
+                handler: user.getUserById
             },
             {
                 method: 'PATCH',
                 path: '/users/{id}',
-                handler: updateUser
+                handler: user.updateUser
             },
             {
                 method: 'DELETE',
                 path: '/users/{id}',
-                handler: deleteUser
+                handler: user.deleteUser
             },
         ]
     )
 
+/*
     // Amis
     server.route(
         [
@@ -175,6 +179,8 @@ const init = async () => {
             handler: getCountryLanguage
         }
     )
+
+*/
 
     await server.start();
     console.log(`Le serveur court à l\'adresse ${server.info.uri}`);
