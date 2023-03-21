@@ -7,27 +7,39 @@ import User from '../models/userModel'
 import errorDictionnary from '../utils/errorDictionnary'
 import Validation from '../utils/validation'
 import ValidationModels from '../utils/validationModels'
+import Jwt from '@hapi/jwt'
 
 export default class userCtrl {
 
 
     public async userSignIn (request: Request, h: ResponseToolkit){
-        let returnValue
-        let query = request.query
-
-        if (!query.email || !query.password){
-            returnValue = h.response().code(400)
+        let payload = request.payload as UserType
+        if (!payload){
+            return errorDictionnary.noPayload
+        }
+        if (!payload.email || !payload.password){
+            return boom.badRequest('Veuillez fournir une adresse email et un mot de passe')
+        }
+        let user = new User()
+        let userInfo = await user.fetchUserByEmail(payload.email).then(res => res)
+        let checkPassword = userInfo ? await argon2.verify(userInfo.password, payload.password) : false
+        if (!checkPassword){
+            return boom.unauthorized('Adresse email ou mot de passe incorrect')
         }
 
-        let userInfo = 'dbFetchUser(query.email, query.password)'
+        let userId = String((userInfo as User).id)
 
-        /*
-        if (await argon2.verify(userInfo.password, query.password)){
-            returnValue = userInfo
+        const token = Jwt.token.generate({
+            iss: 'api.zemus.info',
+            aud: 'api.zemus.info',
+            sub: userId,
+            userEmail: payload.email,
+        }, 'Coffee Pot')
+
+        return {
+            user: userInfo,
+            token: token
         }
-        */
-
-        return returnValue
     }
 
 
@@ -43,12 +55,13 @@ export default class userCtrl {
         }
 
         let user = new User()
-        let previous:number|void = await user.fetchUserByEmail((payload as UserType).email).then(res => res)
+        let previous = await user.fetchUserByEmail((payload as UserType).email, true).then(res => res)
         if (previous){
             return errorDictionnary.existingUser
         }
         
         payload.password = await argon2.hash((payload as UserType).password)
+
         const response = await user
             .createUser(payload as UserType)
             .then(result => {

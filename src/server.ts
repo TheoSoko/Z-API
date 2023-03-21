@@ -1,26 +1,35 @@
 'use strict';
-import Hapi, {Request, ResponseToolkit} from '@hapi/hapi'
+import Hapi, {Request, ResponseToolkit, ServerRoute, ReqRefDefaults} from '@hapi/hapi'
 import search from './controllers/searchCtrl'
 import userCtrl from './controllers/userCtrl'
+import Jwt from '@hapi/jwt';
+import authParams from './middlewares/auth'
+import { endpoints } from './router/router'
 
 //Gestion d'erreur à l'initialisation 
 process.on('unhandledRejection', (err) => {console.log(err);process.exit(1)})
 
 
 
-//Notre serveur
+//Le serveur
 const init = async () => {
 
     const server = Hapi.server({
-        port: 3000,
+        port: 8080,
         host: 'localhost'
     })
 
-    const user = new userCtrl()
+    await server.register(Jwt)
+    server.auth.strategy('default_jwt', 'jwt', authParams)
+    server.auth.default('default_jwt');
 
 
-    /*  ROUTES  */
+    for (const key in endpoints){
+        let routeArray = endpoints[key as keyof typeof endpoints]
+        server.route(routeArray as ServerRoute<ReqRefDefaults>[])
+    }
 
+/*
     // Recherche
     server.route(
         {
@@ -36,6 +45,9 @@ const init = async () => {
             {
                 method: 'POST',
                 path: '/users/sign-in',
+                options: {
+                    auth: false
+                },
                 handler: user.userSignIn
             },
             {
@@ -46,6 +58,9 @@ const init = async () => {
             {
                 method: 'GET',
                 path: '/users/{id}',
+                options: {
+                    auth: false
+                },
                 handler: user.getUserById
             },
             {
@@ -61,7 +76,7 @@ const init = async () => {
         ]
     )
 
-/*
+
     // Amis
     server.route(
         [
