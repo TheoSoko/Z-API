@@ -9,7 +9,7 @@ import Validation from '../utils/validation'
 import ValidationModels from '../utils/validationModels'
 import Jwt from '@hapi/jwt'
 
-export default class userCtrl {
+export default class UserCtrl {
 
 
     public async userSignIn (request: Request, h: ResponseToolkit){
@@ -21,13 +21,17 @@ export default class userCtrl {
             return boom.badRequest('Veuillez fournir une adresse email et un mot de passe')
         }
         let user = new User()
-        let userInfo = await user.fetchUserByEmail(payload.email).then(res => res)
-        let checkPassword = userInfo ? await argon2.verify(userInfo.password, payload.password) : false
+        let userInfo = await user.fetchUserByEmail(payload.email).then(res => res).catch(() => null)
+        if (userInfo === null){
+            return errorDictionnary.serverError
+        }
+        let checkPassword = !userInfo ? false : await argon2.verify(userInfo.password!, payload.password) 
+        delete userInfo!.password
         if (!checkPassword){
             return boom.unauthorized('Adresse email ou mot de passe incorrect')
         }
 
-        let userId = String((userInfo as User).id)
+        let userId = String(userInfo!.id)
 
         const token = Jwt.token.generate({
             iss: 'api.zemus.info',
@@ -79,12 +83,15 @@ export default class userCtrl {
 
 
     public async getUserById (request: Request, h: ResponseToolkit){
-        let id = request.params.id
+        let id = request.params?.id
+        if (!id){
+            return errorDictionnary.noId
+        }
         let user = new User()
         return await user.fetchUser(id)
                 .then((result) => result)
                 .catch((err: {code: string}) => {
-                    return errorDictionnary[err.code] || errorDictionnary.unidentified
+                    return errorDictionnary[err.code] || errorDictionnary.serverError
                 })
     }
 
@@ -126,7 +133,7 @@ export default class userCtrl {
                         affectedRows: res
                     }
                 })
-                .catch(() => errorDictionnary.unidentified)
+                .catch(() => errorDictionnary.serverError)
     }
 
 
