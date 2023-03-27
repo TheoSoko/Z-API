@@ -1,15 +1,15 @@
 import zemusDb from '../db/dbConnection'
 import { UserType } from '../types/queryTypes'
 
-
 export default class User implements UserType{
 
-    id?: number
+    id!: number
     firstname!: string
     lastname!: string
     email!: string
     password!: string
     country!: string
+    
 
     constructor(properties?: any){
     }
@@ -43,9 +43,9 @@ export default class User implements UserType{
         )
     }
     
-    public async fetchUserByEmail(email: string):Promise<number | void>{
+    public async fetchUserByEmail(email: string, idOnly?: boolean):Promise<typeof User.prototype | void>{
         return (
-            await zemusDb.select('id')
+            await zemusDb.select(idOnly ? 'id' : 'id', 'password', 'lastname', 'firstname', 'email', 'country')
                 .from('users')
                 .where({email: email})
                 .first()
@@ -65,7 +65,7 @@ export default class User implements UserType{
             .then((affectedRows: number) => affectedRows)
             .catch((err:Error) => { 
                 console.log(err)
-                throw err 
+                throw err
             })
     )
     }
