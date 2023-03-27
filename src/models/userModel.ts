@@ -1,7 +1,9 @@
 import zemusDb from '../db/dbConnection'
 import { UserType } from '../types/queryTypes'
+import { FriendShip } from '../types/types'
 
-export default class User implements UserType{
+
+export default class User{
 
     id!: number
     firstname!: string
@@ -9,10 +11,14 @@ export default class User implements UserType{
     email!: string
     password!: string
     country!: string
-    
-
-    constructor(properties?: any){
-    }
+    fiendShip!: {
+        id: number
+        user1Id: number
+        user2Id: number
+        confirmed: boolean 	
+        date: Date | string
+      }
+  
 
 
     public async createUser(properties: UserType):Promise<number>{
@@ -31,7 +37,7 @@ export default class User implements UserType{
 
     public async fetchUser(id: number):Promise<typeof User.prototype | void>{
         return (
-            await zemusDb.select('lastname', 'firstname', 'email', 'country')
+            await zemusDb.select('id','lastname', 'firstname', 'email', 'profile_picture', 'country')
                 .from('users')
                 .where({id: id})
                 .first()
@@ -43,9 +49,9 @@ export default class User implements UserType{
         )
     }
     
-    public async fetchUserByEmail(email: string, idOnly?: boolean):Promise<typeof User.prototype | void>{
+    public async fetchUserByEmail(email: string, idOnly?: boolean):Promise<Partial<typeof User.prototype> | void>{
         return (
-            await zemusDb.select(idOnly ? 'id' : 'id', 'password', 'lastname', 'firstname', 'email', 'country')
+            await zemusDb.select(idOnly ? 'id' : 'id', 'password', 'lastname', 'firstname', 'email', 'profile_picture', 'country')
                 .from('users')
                 .where({email: email})
                 .first()
@@ -81,6 +87,24 @@ export default class User implements UserType{
                 throw err 
             })
     )
+    }
+
+    // Methodes friends
+
+    public async fetchFriends(id:number):Promise<FriendShip[] | void>{
+        return (
+            await zemusDb
+            .select('user1_id','user2_id', 'confirmed', 'date')
+            .from('friendships')
+            .where({user1_id: id})
+            .orWhere({user2_id: id})
+            .andWhere({confirmed: 1})
+            .then((res: FriendShip[]) => res)
+            .catch((err:Error) => { 
+                console.log(err)
+                throw err 
+            })
+        )
     }
 
 }   

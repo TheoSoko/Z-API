@@ -26,7 +26,7 @@ const init = async () => {
 
     for (const key in endpoints){
         let routeArray = endpoints[key as keyof typeof endpoints]
-        server.route(routeArray as ServerRoute<ReqRefDefaults>[])
+        server.route(routeArray)
     }
 
 /*

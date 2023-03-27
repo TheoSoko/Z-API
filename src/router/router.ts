@@ -1,11 +1,18 @@
-import userCtrl from '../controllers/userCtrl'
+import UserCtrl from '../controllers/userCtrl'
+import FriendCtrl from '../controllers/friendCtrl'
 import search from '../controllers/searchCtrl'
+import {ServerRoute, ReqRefDefaults} from '@hapi/hapi'
+
 
 //controllers
-const user = new userCtrl()
+const user = new UserCtrl()
+const friendCtrl = new FriendCtrl()
 
+type Endpoints = {
+    [key: string]: ServerRoute<ReqRefDefaults>[]
+}
 
-export const endpoints = {
+export const endpoints:Endpoints = {
     search:
         [
             {
@@ -58,22 +65,22 @@ export const endpoints = {
             {
                 method: 'GET',
                 path: '/users/{id}/friends',
-                handler: getFriends
+                handler: friendCtrl.getAllFriends
             },
             {
                 method: 'POST',
                 path: '/users/{id}/friends',
-                handler: createFriendship
+                handler: friendCtrl.createFriendship
             },
             {
                 method: 'GET',
-                path: 'friendships/{id}',
-                handler: getFriendShip
+                path: '/friendships/{id}',
+                handler: friendCtrl.getFriendship
             },
             {
                 method: 'DELETE',
-                path: 'friendships/{id}',
-                handler: deleteUser
+                path: '/friendships/{id}',
+                handler: friendCtrl.deleteFriendship
             },
         ]
 
