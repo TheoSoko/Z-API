@@ -26,17 +26,16 @@ export default class UserCtrl {
             return errorDictionnary.serverError
         }
         let checkPassword = !userInfo ? false : await argon2.verify(userInfo.password!, payload.password) 
-        delete userInfo!.password
         if (!checkPassword){
             return boom.unauthorized('Adresse email ou mot de passe incorrect')
         }
 
-        let userId = String(userInfo!.id)
-
+        delete userInfo!.password
+        
         const token = Jwt.token.generate({
             iss: 'api.zemus.info',
             aud: 'api.zemus.info',
-            sub: userId,
+            sub: String(userInfo!.id),
             userEmail: payload.email,
         }, 'Coffee Pot')
 

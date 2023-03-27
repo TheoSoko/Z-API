@@ -30,6 +30,7 @@
     "@types/boom": "^7.3.2",
     "@types/hapi": "^18.0.8",
     "argon2": "^0.30.3",
+    "git-emoji-commit": "^1.16.2",
     "knex": "^2.4.2",
     "mysql": "^2.18.1"
   }
