@@ -52,5 +52,29 @@ export const endpoints = {
                 path: '/users/{id}',
                 handler: user.deleteUser
             },
+        ],
+    friends: 
+        [
+            {
+                method: 'GET',
+                path: '/users/{id}/friends',
+                handler: getFriends
+            },
+            {
+                method: 'POST',
+                path: '/users/{id}/friends',
+                handler: createFriendship
+            },
+            {
+                method: 'GET',
+                path: 'friendships/{id}',
+                handler: getFriendShip
+            },
+            {
+                method: 'DELETE',
+                path: 'friendships/{id}',
+                handler: deleteUser
+            },
         ]
+
 }
