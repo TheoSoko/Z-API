@@ -9,7 +9,7 @@ export type FriendShip = {
     //id: number
     user1_id: number
     user2_id: number
-    confirmed: boolean 	
+    confirmed: number //boolean, sort of 	
     date: Date | string
 }
 

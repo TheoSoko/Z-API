@@ -23,9 +23,7 @@ export default class User{
 
     public async createUser(properties: UserType):Promise<number>{
         return (
-            await zemusDb.insert(
-                properties,
-            )
+            await zemusDb.insert(properties)
             .into('users')
             .then((result: typeof User.prototype) => result)
             .catch((err:Error) => { 
@@ -96,10 +94,38 @@ export default class User{
             await zemusDb
             .select('user1_id','user2_id', 'confirmed', 'date')
             .from('friendships')
-            .where({user1_id: id})
+            .where({confirmed: true})
+            .andWhere({user1_id: id})
             .orWhere({user2_id: id})
-            .andWhere({confirmed: 1})
             .then((res: FriendShip[]) => res)
+            .catch((err:Error) => { 
+                console.log(err)
+                throw err 
+            })
+        )
+    }
+
+    public async addFriend(id:number, friendId:number):Promise<number>{
+        return (
+            await zemusDb.insert({user1_id: id, user2_id: friendId})
+            .into('friendships')
+            .then((friendshipId: number) => friendshipId)
+            .catch((err:Error) => { 
+                console.log(err)
+                throw err 
+            })
+        )
+    }
+
+    public async getFriendship(id:number, friendId:number):Promise<FriendShip | void>{
+        return (
+            await zemusDb
+            .select('user1_id','user2_id', 'confirmed', 'date')
+            .from('friendships')
+            .where({user1_id: id, user2_id: friendId})
+            .orWhere({user1_id: friendId, user2_id: id})
+            .first()
+            .then((res: FriendShip) => res)
             .catch((err:Error) => { 
                 console.log(err)
                 throw err 

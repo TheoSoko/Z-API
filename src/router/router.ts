@@ -69,12 +69,12 @@ export const endpoints:Endpoints = {
             },
             {
                 method: 'POST',
-                path: '/users/{id}/friends',
-                handler: friendCtrl.createFriendship
+                path: '/users/{id}/friend-request/{friendId}',
+                handler: friendCtrl.friendRequest
             },
             {
                 method: 'GET',
-                path: '/friendships/{id}',
+                path: '/users/{id}/friends/{friendId}',
                 handler: friendCtrl.getFriendship
             },
             {
