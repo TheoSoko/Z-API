@@ -23,20 +23,19 @@ export default class UserCtrl {
         let user = new User()
         let userInfo = await user.fetchUserByEmail(payload.email).then(res => res).catch(() => null)
         if (userInfo === null){
-            return errorDictionnary.serverError
+            return errorDictionnary.server
         }
         let checkPassword = !userInfo ? false : await argon2.verify(userInfo.password!, payload.password) 
-        delete userInfo!.password
         if (!checkPassword){
             return boom.unauthorized('Adresse email ou mot de passe incorrect')
         }
 
-        let userId = String(userInfo!.id)
-
+        delete userInfo!.password
+        
         const token = Jwt.token.generate({
             iss: 'api.zemus.info',
             aud: 'api.zemus.info',
-            sub: userId,
+            sub: String(userInfo!.id),
             userEmail: payload.email,
         }, 'Coffee Pot')
 
@@ -71,7 +70,7 @@ export default class UserCtrl {
             .then(result => {
                 return {
                     id: result,
-                    newRessource: `../users/${result}`
+                    newRessource: `./users/${result}`
                 }
             })
             .catch((err: {code: string}) => {
@@ -91,7 +90,7 @@ export default class UserCtrl {
         return await user.fetchUser(id)
                 .then((result) => result)
                 .catch((err: {code: string}) => {
-                    return errorDictionnary[err.code] || errorDictionnary.serverError
+                    return errorDictionnary[err.code] || errorDictionnary.server
                 })
     }
 
@@ -133,7 +132,7 @@ export default class UserCtrl {
                         affectedRows: res
                     }
                 })
-                .catch(() => errorDictionnary.serverError)
+                .catch(() => errorDictionnary.server)
     }
 
 
