@@ -68,8 +68,8 @@ export const endpoints:Endpoints = {
                 handler: friendCtrl.getAllFriends
             },
             {
-                method: 'POST',
-                path: '/users/{id}/friend-request/{friendId}',
+                method: 'PUT',
+                path: '/users/{id}/friends/{friendId}',
                 handler: friendCtrl.friendRequest
             },
             {
@@ -79,7 +79,7 @@ export const endpoints:Endpoints = {
             },
             {
                 method: 'DELETE',
-                path: '/friendships/{id}',
+                path: '/users/{id}/friends/{friendId}',
                 handler: friendCtrl.deleteFriendship
             },
         ]

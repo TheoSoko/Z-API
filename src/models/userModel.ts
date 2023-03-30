@@ -133,4 +133,32 @@ export default class User{
         )
     }
 
+    public async acceptFriendship(id:number, friendId:number):Promise<number | void>{
+        return (
+            await zemusDb('friendships')
+            .update({confirmed: true})
+            .where({user1_id: friendId, user2_id: id})
+            .then((affectedRows:number) => affectedRows)
+            .catch((err:Error) => {
+                console.log(err)
+                throw err 
+            })
+        )
+    }
+
+    public async deleteFriendShip(id:number, friendId:number):Promise<number>{
+        return (
+            await zemusDb('friendships')
+            .del()
+            .where({user1_id: id, user2_id: friendId})
+            .orWhere({user1_id: friendId, user2_id: id})
+            .then((affectedRows:number) => affectedRows)
+            .catch((err:Error) => {
+                console.log(err)
+                throw err
+            })
+        )
+    }
+
+
 }   
