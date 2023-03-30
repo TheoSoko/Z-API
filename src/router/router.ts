@@ -1,5 +1,6 @@
 import UserCtrl from '../controllers/userCtrl'
 import FriendCtrl from '../controllers/friendCtrl'
+import MessageCtrl from '../controllers/messageCtrl'
 import search from '../controllers/searchCtrl'
 import {ServerRoute, ReqRefDefaults} from '@hapi/hapi'
 
@@ -7,6 +8,7 @@ import {ServerRoute, ReqRefDefaults} from '@hapi/hapi'
 //controllers
 const user = new UserCtrl()
 const friendCtrl = new FriendCtrl()
+const messageCtrl = new MessageCtrl()
 
 type Endpoints = {
     [key: string]: ServerRoute<ReqRefDefaults>[]
@@ -82,6 +84,18 @@ export const endpoints:Endpoints = {
                 path: '/users/{id}/friends/{friendId}',
                 handler: friendCtrl.deleteFriendship
             },
-        ]
-
+        ],
+    messages: 
+        [
+            {
+                method: 'GET',
+                path: '/users/{id}/friends/{friendId}/messages',
+                handler: messageCtrl.getMessages
+            },
+            {
+                method: 'POST',
+                path: '/users/{id}/friends/{friendId}/messages',
+                handler: messageCtrl.sendMessage 
+            }
+        ],
 }

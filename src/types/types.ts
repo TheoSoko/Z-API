@@ -13,6 +13,14 @@ export type FriendShip = {
     date: Date | string
 }
 
+export type Message = {
+    id: number
+    user_sender_id: number
+    user_receiver_id: number
+    friendship_id: number
+    content: string  // A voir plus tard
+    created_at: Date | string
+}
 
 export type UnkownIterable = {[key:string] : unknown}
 

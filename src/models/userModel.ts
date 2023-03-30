@@ -1,6 +1,6 @@
 import zemusDb from '../db/dbConnection'
 import { UserType } from '../types/queryTypes'
-import { FriendShip } from '../types/types'
+import { FriendShip, Message } from '../types/types'
 
 
 export default class User{
@@ -117,7 +117,7 @@ export default class User{
         )
     }
 
-    public async getFriendship(id:number, friendId:number):Promise<FriendShip | void>{
+    public async fetchFriendship(id:number, friendId:number):Promise<FriendShip | void>{
         return (
             await zemusDb
             .select('user1_id','user2_id', 'confirmed', 'date')
@@ -156,6 +156,35 @@ export default class User{
             .catch((err:Error) => {
                 console.log(err)
                 throw err
+            })
+        )
+    }
+
+    public async fetchMessages(id:number, friendId: number):Promise<Message[]>{
+        return (
+            await zemusDb
+            .select('id', 'user_sender_id', 'user_receiver_id', 'friendship_id', 'content', 'created_at')
+            .from('messages')
+            .where({user_sender_id: id, user_receiver_id: friendId})
+            .orWhere({user_sender_id: friendId, user_receiver_id: id})
+            .catch((err:Error) => { 
+                console.log(err)
+                throw err 
+            })
+        )
+    }
+
+    public async postMessage(id:number, friendId: number, content: string):Promise<number>{
+        return (
+            await zemusDb('messages')
+            .insert({
+                content: content, 
+                user_sender_id: id, 
+                user_receiver_id: friendId
+            })
+            .catch((err:Error) => { 
+                console.log(err)
+                throw err 
             })
         )
     }
