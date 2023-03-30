@@ -1,6 +1,5 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import boom from '@hapi/boom'
-import { FriendShip } from '../types/types'
 import User from '../models/userModel'
 import Errors from '../utils/errorDictionary'
 
@@ -39,7 +38,7 @@ export default class FriendCtrl {
         }
 
         const user = new User()
-        const friendship = await user.getFriendship(id, friendId)
+        const friendship = await user.fetchFriendship(id, friendId)
 
         //Si déjà amis : 409 Conflict
         if (friendship !== undefined && friendship.confirmed == 1){
@@ -84,7 +83,7 @@ export default class FriendCtrl {
             return Errors.no_id_friends
         }
         const user = new User()
-        const response = await user.getFriendship(id, friendId)
+        const response = await user.fetchFriendship(id, friendId)
             .then( friendship => friendship || boom.notFound() )
             .catch((err: {code: string}) => {
                 return Errors[err.code] || Errors.server
