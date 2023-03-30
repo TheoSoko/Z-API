@@ -1,25 +1,22 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import boom from '@hapi/boom'
-import { UserType } from '../types/queryTypes'
 import { FriendShip } from '../types/types'
 import User from '../models/userModel'
-import Validation from '../utils/validation'
-import ValidationModels from '../utils/validationModels'
-import errorDictionnary from '../utils/errorDictionnary'
+import Errors from '../utils/errorDictionary'
 
 
 export default class FriendCtrl {
 
-    public async getAllFriends (request: Request, h: ResponseToolkit){
-        const senderId = request.params?.id
+    public async getAllFriends (req: Request){
+        const senderId = req.params?.id
         if (!senderId){
-            return errorDictionnary.noId
+            return Errors.no_id
         }
         const user = new User()
         const friendships = await user.fetchFriends(senderId).then(res => res)
         
         if (!friendships) {
-            return errorDictionnary.unidentified
+            return Errors.unidentified
         }
 
         const friends = []
@@ -34,61 +31,75 @@ export default class FriendCtrl {
         return friends
     }
 
-    public async friendRequest (request: Request, h: ResponseToolkit){
-        const id = request.params?.id
-        const friendId = request.params?.friendId
+    public async friendRequest (req: Request){
+        const id = req.params?.id
+        const friendId = req.params?.friendId
         if (!id || !friendId){
-            return errorDictionnary.noIdFriends
+            return Errors.no_id_friends
         }
 
         const user = new User()
-
-        //Vérification sur l'existance d'une amitié ou demande d'ami précédente
         const friendship = await user.getFriendship(id, friendId)
 
+        //Si déjà amis : 409 Conflict
         if (friendship !== undefined && friendship.confirmed == 1){
-            return errorDictionnary.alreadyFriends //déjà amis
+            return Errors.already_friends
         }
+        //Si demande déjà envoyée par l'autre utilisateur : accepte la demande
         if (friendship !== undefined && id == friendship.user2_id){
-            return h.response({
-                message: 'L\'utilisateur destinataire a déjà envoyé une demande à l\'utilisateur actuel, veuillez envoyer une requête PATCH? au lien suivant',
-                link: `./users/${id}/friend-requests/${friendship.user1_id}`
-            })
-            .code(303)
+            return await user.acceptFriendship(id, friendId)
+                    .then(() => {
+                        return {
+                            message: 'Demande d\'ami acceptée',
+                            newFriend: `./users/${id}/friends/${friendId}`
+                        }
+                    })
+                    .catch((err: {code: string}) => {
+                        return Errors[err.code] || Errors.server
+                    })
         }
+        //Si demande déjà envoyée : 409 Conflict
         if (friendship !== undefined){
-            errorDictionnary.alreadySent // demande déjà envoyée
+            return Errors.already_sent_invitation // demande déjà envoyée
         }
         
-        const newFriendship = await user.addFriend(id, friendId)
-            .then(friendshipId => friendshipId)
-            .catch(() => false)
-        if (!newFriendship){
-            return errorDictionnary.server
-        }
-
-        return {
-            newFriend: `./users/${friendId}`
-        }
+        //Sinon, crée nouvelle demande
+        return (
+            await user.addFriend(id, friendId)
+            .then(() => {
+                return {
+                    newFriendship: `./users/${id}/friends/${friendId}`
+                }
+            })
+            .catch((err: {code: string}) => {
+                return Errors[err.code] || Errors.server
+            })
+        )
     }
 
-    public async getFriendship (request: Request, h: ResponseToolkit){
-        const id = request.params?.id
-        const friendId = request.params?.friendId
+    public async getFriendship (req: Request){
+        const id = req.params?.id
+        const friendId = req.params?.friendId
         if (!id || !friendId){
-            return errorDictionnary.noIdFriends
+            return Errors.no_id_friends
         }
         const user = new User()
-        const friendship = await user.getFriendship(id, friendId)
-            .then(res => res)
+        const response = await user.getFriendship(id, friendId)
+            .then( friendship => friendship || boom.notFound() )
             .catch((err: {code: string}) => {
-                return errorDictionnary[err.code] || errorDictionnary.unidentified
+                return Errors[err.code] || Errors.server
             })
 
-        return friendship
+        return response 
     }
 
-    public async deleteFriendship (){
-
+    public async deleteFriendship (req: Request){
+        const id = req.params?.id
+        const friendId = req.params?.friendId
+        if (!id || !friendId){
+            return Errors.no_id_friends
+        }
+        let response = await new User().deleteFriendShip(id, friendId)
+        return {affectedRows: response}
     }
 }
