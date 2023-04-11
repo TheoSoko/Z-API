@@ -7,125 +7,144 @@ import User from '../models/userModel'
 import Errors from '../utils/errorDictionary'
 import Validation from '../utils/validation'
 import ValidationModels from '../utils/validationModels'
-import Jwt from '@hapi/jwt'
+import { generateToken } from '../middlewares/auth'
 
 export default class UserCtrl {
 
 
-    public async userSignIn (request: Request){
+    public async userSignIn (request: Request, reply: ResponseToolkit){
+
+        if (request.pre.db == null) return Errors.db_unavailable
+
         let payload = request.payload as UserType
-        if (!payload){
-            return Errors.no_payload
-        }
-        if (!payload.email || !payload.password){
-            return boom.badRequest('Veuillez fournir une adresse email et un mot de passe')
-        }
+        if (!payload) return Errors.no_payload
+        if (!payload.email || !payload.password) return boom.badRequest('Veuillez fournir une adresse email et un mot de passe')
+        
         let user = new User()
-        let userInfo = await user.fetchUserByEmail(payload.email).then(res => res).catch(() => null)
-        if (userInfo === null){
-            return Errors.server
-        }
-        let checkPassword = !userInfo ? false : await argon2.verify(userInfo.password!, payload.password) 
-        if (!checkPassword){
+        let userInfo = await user.fetchUserByEmail(payload.email).catch(() => null) // Si erreur, renvoie null
+
+        if (userInfo === null) return Errors.unidentified
+        if (userInfo === undefined || await argon2.verify(userInfo.password, payload.password)){
             return boom.unauthorized('Adresse email ou mot de passe incorrect')
         }
-
-        delete userInfo!.password
+        userInfo.password = ''
         
-        const token = Jwt.token.generate({
-            iss: 'api.zemus.info',
-            aud: 'api.zemus.info',
-            sub: String(userInfo!.id),
-            userEmail: payload.email,
-        }, 'Coffee Pot')
+        const token = generateToken(userInfo.id, payload.email)
 
-        return {
-            user: userInfo,
-            token: token
-        }
+        return (
+            reply.response({
+                user: userInfo,
+                token: token
+            })
+            .code(201)
+        )
     }
 
 
-    public async createUser (request: Request){
-        let payload = request.payload as UnkownIterable
-        if (!payload){
-            return Errors.no_payload
-        }
+    public async createUser (request: Request, reply: ResponseToolkit){
+
+        if (request.pre.db == null) return Errors.db_unavailable
+        
+        let payload = request.payload as UserType
+        if (!payload) return Errors.no_payload
+
         let val = new Validation()
-        let errors = val.validator(payload , ValidationModels.createUser)
-        if (errors.length > 0){
-            return errors
+        let err = val.validator(payload , ValidationModels.createUser)
+        if (err.length > 0) {
+            return reply.response({
+                statusCode: 422,
+                error: "Unprocessable Entity",
+                message: "Les données envoyées dans le corps de la requêtes ont été mal formatées",
+                errorList: err
+            })
+            .code(422)
         }
 
         let user = new User()
-        let previous = await user.fetchUserByEmail((payload as UserType).email, true).then(res => res)
+        let previous = await user.fetchUserByEmail((payload as UserType).email, true)
         if (previous){
             return Errors.existing_user
         }
         
         payload.password = await argon2.hash((payload as UserType).password)
 
-        const response = await user
-            .createUser(payload as UserType)
-            .then(result => {
-                return {
-                    id: result,
-                    newRessource: `./users/${result}`
-                }
-            })
-            .catch((err: {code: string}) => {
-                return Errors[err.code] || Errors.unidentified
-            })
-
-        return response
+        try {
+            const newUser = await user.createUser(payload as UserType)
+            return (
+                reply.response({
+                    id: newUser,
+                    newRessource: `./users/${newUser}`
+                })
+                .code(201)
+            )
+        } catch (error) {
+            const err = error as {code: string}
+            return Errors[err.code] || Errors.unidentified
+        }
+        
     }
 
 
     public async getUserById (request: Request){
+        if (request.pre.db == null) return Errors.db_unavailable
+
         let id = request.params?.id
         if (!id){
             return Errors.no_id
         }
-        let user = new User()
-        return await user.fetchUser(id)
-                .then((result) => result)
-                .catch((err: {code: string}) => {
-                    return Errors[err.code] || Errors.server
-                })
+        return (
+            await new User().fetchUser(id)
+            .catch((err: {code: string}) => {
+                return Errors[err.code] || Errors.server
+            })
+        )
     }
 
 
-    public async updateUser (request: Request){
-        let payload = request.payload as UnkownIterable
+    public async updateUser (request: Request, reply: ResponseToolkit){
+
+        if (request.pre.db == null) return Errors.db_unavailable
+
+        let payload = request.payload as UserType
         let userId = request.params.id
+        if (!userId) return Errors.no_id
+        if (!payload) return Errors.no_payload
 
         let val = new Validation()
-        let errors = val.validator(payload , ValidationModels.updateUser)
-        if (errors.length > 0){
-            return errors
+        let err = val.validator(payload , ValidationModels.updateUser)
+        if (err.length > 0) {
+            return reply.response({
+                statusCode: 422,
+                error: "Unprocessable Entity",
+                message: "Les données envoyées dans le corps de la requêtes ont été mal formatées",
+                errorList: err
+            })
+            .code(422)
         }
 
         if (payload.password != null){
-            payload.password = await argon2.hash((payload as UserType).password)
+            payload.password = await argon2.hash(payload.password)
         }
 
-       let user = new User()
-       return user.updateUser(userId, payload)
-            .then((res:number) => {
-                return {affectedRows: res}
-            })
-            .catch((err: {code: string}) => {
-                return Errors[err.code] || Errors.unidentified
-            })
+        try {
+            let updated = await new User().updateUser(userId, payload)
+            return reply.response({updatedRows: updated}).code(200)
+        } 
+        catch (error) {
+            const err = error as {code: string}
+            return Errors[err.code] || Errors.unidentified
+        }
     }
 
 
     public async deleteUser (request: Request){
+        if (request.pre.db == null) return Errors.db_unavailable
+
         let id = request.params.id
         if (!parseInt(id)){
             return boom.badRequest()
         }
-        let response = new User().deleteUser(id)
+        let response = await new User().deleteUser(id)
         return { affectedRows: response }
     }
 

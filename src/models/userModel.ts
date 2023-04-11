@@ -1,4 +1,4 @@
-import zemusDb from '../db/dbConnection'
+import db from '../db/connection'
 import { UserType } from '../types/queryTypes'
 import { FriendShip, Message } from '../types/types'
 
@@ -23,7 +23,7 @@ export default class User{
 
     public async createUser(properties: UserType):Promise<number>{
         return (
-            await zemusDb.insert(properties)
+            await db.insert(properties)
             .into('users')
             .then((result: typeof User.prototype) => result)
             .catch((err:Error) => { 
@@ -35,7 +35,7 @@ export default class User{
 
     public async fetchUser(id: number):Promise<typeof User.prototype | void>{
         return (
-            await zemusDb.select('id','lastname', 'firstname', 'email', 'profile_picture', 'country')
+            await db.select('id','lastname', 'firstname', 'email', 'profile_picture', 'country')
                 .from('users')
                 .where({id: id})
                 .first()
@@ -47,9 +47,9 @@ export default class User{
         )
     }
     
-    public async fetchUserByEmail(email: string, idOnly?: boolean):Promise<Partial<typeof User.prototype> | void>{
+    public async fetchUserByEmail(email: string, idOnly?: boolean):Promise<typeof User.prototype | void>{
         return (
-            await zemusDb.select(idOnly ? 'id' : 'id', 'password', 'lastname', 'firstname', 'email', 'profile_picture', 'country')
+            await db.select(idOnly ? 'id' : 'id', 'password', 'lastname', 'firstname', 'email', 'profile_picture', 'country')
                 .from('users')
                 .where({email: email})
                 .first()
@@ -63,7 +63,7 @@ export default class User{
 
     public async updateUser(id:number, payload: Partial<UserType>):Promise<number>{
         return (
-            await zemusDb('users')
+            await db('users')
             .where({id: id})
             .update(payload)
             .then((affectedRows: number) => affectedRows)
@@ -71,12 +71,12 @@ export default class User{
                 console.log(err)
                 throw err
             })
-    )
+        )
     }
 
     public async deleteUser(id:number):Promise<number>{
         return (
-            await zemusDb('users')
+            await db('users')
             .where({id: id})
             .del()
             .then((affectedRows: number) => affectedRows)
@@ -84,14 +84,14 @@ export default class User{
                 console.log(err)
                 throw err 
             })
-    )
+        )
     }
 
     // Methodes friends
 
     public async fetchFriends(id:number):Promise<FriendShip[] | void>{
         return (
-            await zemusDb
+            await db
             .select('user1_id','user2_id', 'confirmed', 'date')
             .from('friendships')
             .where({confirmed: true})
@@ -107,7 +107,7 @@ export default class User{
 
     public async addFriend(id:number, friendId:number):Promise<number>{
         return (
-            await zemusDb.insert({user1_id: id, user2_id: friendId})
+            await db.insert({user1_id: id, user2_id: friendId})
             .into('friendships')
             .then((friendshipId: number) => friendshipId)
             .catch((err:Error) => { 
@@ -117,9 +117,9 @@ export default class User{
         )
     }
 
-    public async fetchFriendship(id:number, friendId:number):Promise<FriendShip | void>{
+    public async fetchFriendshipInfo(id:number, friendId:number):Promise<FriendShip | void>{
         return (
-            await zemusDb
+            await db
             .select('user1_id','user2_id', 'confirmed', 'date')
             .from('friendships')
             .where({user1_id: id, user2_id: friendId})
@@ -135,7 +135,7 @@ export default class User{
 
     public async acceptFriendship(id:number, friendId:number):Promise<number | void>{
         return (
-            await zemusDb('friendships')
+            await db('friendships')
             .update({confirmed: true})
             .where({user1_id: friendId, user2_id: id})
             .then((affectedRows:number) => affectedRows)
@@ -148,7 +148,7 @@ export default class User{
 
     public async deleteFriendShip(id:number, friendId:number):Promise<number>{
         return (
-            await zemusDb('friendships')
+            await db('friendships')
             .del()
             .where({user1_id: id, user2_id: friendId})
             .orWhere({user1_id: friendId, user2_id: id})
@@ -162,7 +162,7 @@ export default class User{
 
     public async fetchMessages(id:number, friendId: number):Promise<Message[]>{
         return (
-            await zemusDb
+            await db
             .select('id', 'user_sender_id', 'user_receiver_id', 'friendship_id', 'content', 'created_at')
             .from('messages')
             .where({user_sender_id: id, user_receiver_id: friendId})
@@ -176,7 +176,7 @@ export default class User{
 
     public async postMessage(id:number, friendId: number, content: string):Promise<number>{
         return (
-            await zemusDb('messages')
+            await db('messages')
             .insert({
                 content: content, 
                 user_sender_id: id, 

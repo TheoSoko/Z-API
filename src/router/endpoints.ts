@@ -3,7 +3,7 @@ import FriendCtrl from '../controllers/friendCtrl'
 import MessageCtrl from '../controllers/messageCtrl'
 import search from '../controllers/searchCtrl'
 import {ServerRoute, ReqRefDefaults} from '@hapi/hapi'
-
+import { checkDb } from '../middlewares/middlewares'
 
 //controllers
 const user = new UserCtrl()
@@ -90,7 +90,8 @@ export const endpoints:Endpoints = {
             {
                 method: 'GET',
                 path: '/users/{id}/friends/{friendId}/messages',
-                handler: messageCtrl.getMessages
+                handler: messageCtrl.getMessages,
+
             },
             {
                 method: 'POST',

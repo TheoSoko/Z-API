@@ -1,10 +1,10 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
-import { HapiJwt } from '@hapi/jwt'
+import Jwt, { HapiJwt } from '@hapi/jwt'
 type Artifacts = HapiJwt.Artifacts
 import * as fs from 'fs/promises'
 //keys: async () => fs.readFile('../key/key.txt'),
 
-const authParams = {
+export const authParams = {
     keys: 'Coffee Pot',
     verify: {
         aud: 'api.zemus.info',
@@ -22,4 +22,13 @@ const authParams = {
     }
 }
 
-export default authParams
+export function generateToken(id: number | string, email: string){
+    Jwt.token.generate({
+        iss: 'api.zemus.info',
+        aud: 'api.zemus.info',
+        sub: String(id),
+        userEmail: email,
+    }, 'Coffee Pot')
+}
+
+

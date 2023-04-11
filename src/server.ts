@@ -1,14 +1,13 @@
 'use strict';
-import Hapi, {Request, ResponseToolkit, ServerRoute, ReqRefDefaults} from '@hapi/hapi'
+import Hapi, {Request, ResponseToolkit, ServerRoute, ServerOptions,ReqRefDefaults} from '@hapi/hapi'
 import search from './controllers/searchCtrl'
-import userCtrl from './controllers/userCtrl'
 import Jwt from '@hapi/jwt';
-import authParams from './middlewares/auth'
-import { endpoints } from './router/router'
+import { endpoints } from './router/endpoints'
+import { authParams } from './middlewares/auth'
+import { checkDb } from './middlewares/middlewares'
 
 //Gestion d'erreur à l'initialisation 
 process.on('unhandledRejection', (err) => {console.log(err);process.exit(1)})
-
 
 
 //Le serveur
@@ -16,18 +15,31 @@ const init = async () => {
 
     const server = Hapi.server({
         port: 8080,
-        host: 'localhost'
+        host: 'localhost',
+        routes: {
+            cors: {
+                origin: ['*'],
+                headers: ['Accept', 'Authorization', 'Content-Type', 'If-None-Match'], //default
+            },
+        }
     })
+
 
     await server.register(Jwt)
     server.auth.strategy('default_jwt', 'jwt', authParams)
     server.auth.default('default_jwt');
 
 
-    for (const key in endpoints){
-        let routeArray = endpoints[key as keyof typeof endpoints]
-        server.route(routeArray)
+    // Enregistrement de toutes les routes
+    // Ajout de la function middleware checkDb à options.pre dans chaque config de route
+    for (const name in endpoints){
+        let configObjects = endpoints[name]
+        for (const config of configObjects){
+            config.options = {... config.options, pre:[{ method: checkDb, assign: 'db' }] }
+        }
+        server.route(configObjects)
     }
+
 
 /*
     // Recherche

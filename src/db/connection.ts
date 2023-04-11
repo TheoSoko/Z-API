@@ -1,5 +1,5 @@
 
-const zemusDb = require('knex')({
+const db = require('knex')({
     client: 'mysql',
     connection: {
       host : '127.0.0.1',
@@ -11,4 +11,4 @@ const zemusDb = require('knex')({
   })
   
   
-  export default zemusDb
+  export default db
