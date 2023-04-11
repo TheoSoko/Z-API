@@ -26,18 +26,22 @@ export default class ValidationModels{
         },
     }
 
-    static updateUserValid = () => {
-        type Key = keyof typeof ValidationModels.createUser;
-        let obj = ValidationModels.createUser 
-        for (const fieldName in obj){
-            let properties = obj[fieldName as Key]
-            let propPartial = properties as Partial<typeof properties>
-            delete propPartial?.required
-        }
-        return obj
+    static updateUser = {
+        firstname: {
+            maxLength: 255,
+        },
+        lastname: {
+            maxLength: 255,
+        },
+        email: {
+            regex: /^[\w-\.]{1,64}@[\w-]{1,251}\.[\w-]{2,4}$/,
+        },
+        password: {
+            regex: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&µ£\/\\~|\-])[\wÀ-ÖØ-öø-ÿ@$!%*#?&µ£\/\\~|\-]{8,100}$/ 
+        },
+        country: {
+        },
     }
-
-    static updateUser = ValidationModels.updateUserValid()
 
 
 }

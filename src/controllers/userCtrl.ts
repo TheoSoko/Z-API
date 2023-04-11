@@ -59,14 +59,15 @@ export default class UserCtrl {
             })
             .code(422)
         }
-
+        return err
+        /*
         let user = new User()
         let previous = await user.fetchUserByEmail((payload as UserType).email, true)
         if (previous){
             return Errors.existing_user
         }
         
-        payload.password = await argon2.hash((payload as UserType).password)
+        payload.password = await argon2.hash(payload.password)
 
         try {
             const newUser = await user.createUser(payload as UserType)
@@ -81,7 +82,7 @@ export default class UserCtrl {
             const err = error as {code: string}
             return Errors[err.code] || Errors.unidentified
         }
-        
+        */
     }
 
 

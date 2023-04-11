@@ -32,7 +32,7 @@ export default class Validation  {
     public validator = (input: UnkownIterable, validMod:ValidationModel):string[] => {
         let errors:string[] = []
         type modelKeys = keyof typeof validMod
-
+        console.log(validMod)
         for (const fieldName in validMod){
             let options = validMod[fieldName as modelKeys]
             if (options['required'] && input[fieldName] == undefined){
