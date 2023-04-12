@@ -2,9 +2,9 @@
   "name": "zemus-api",
   "version": "1.0.0",
   "description": "To make it easy for you to get started with GitLab, here's a list of recommended next steps.",
-  "main": "src/server.ts",
+  "main": "server/server.ts",
   "scripts": {
-    "build": "nodemon src/server.ts"
+    "build": "nodemon server/server.ts"
   },
   "repository": {
     "type": "git",
