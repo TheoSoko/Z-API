@@ -29,22 +29,30 @@ export default class Checker  {
 
 
 
-    public check (input: UnkownIterable, validMod:ValidationModel):string[] {
+    public check (input: unknown, validMod:ValidationModel):string[] {
         let errors:string[] = []
+
+        if (typeof input !== 'object') return ['Le corps de la requête doit être un objet JSON']
+        let json = input as UnkownIterable
+
         for (const fieldName in validMod){
             let options = validMod[fieldName]
             
-            if (options['required'] && input[fieldName] == undefined){
+            if (options['required'] && json[fieldName] == undefined){
                 errors.push(`Le champs "${fieldName}" est requis`)
                 continue;
             }
-            if (input[fieldName] !== undefined && typeof input[fieldName] !== 'string'){
+            if (json[fieldName] !== undefined && typeof json[fieldName] !== 'string'){
                 errors.push(`Le champs "${fieldName}" est mal formaté`)
                 continue;
             }
-            if (input[fieldName] === undefined) continue;
+            if (json[fieldName] !== undefined && (json[fieldName] as string).length == 0){
+                errors.push(`Le champs "${fieldName}" ne peut pas être vide`)
+                continue;
+            }
+            if (json[fieldName] === undefined) continue;
 
-            let value = input[fieldName] as string
+            let value = json[fieldName] as string
             // ♪ ♫ ♪
                 for (const option in options){
                     let func = this.validateFunctions[option]

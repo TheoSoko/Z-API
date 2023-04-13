@@ -1,14 +1,16 @@
 import UserCtrl from '../controllers/userCtrl'
 import FriendCtrl from '../controllers/friendCtrl'
 import MessageCtrl from '../controllers/messageCtrl'
+import FavoriteCtrl from '../controllers/favoriteCtrl'
 import search from '../controllers/searchCtrl'
 import {ServerRoute, ReqRefDefaults} from '@hapi/hapi'
-import { checkDb } from '../middlewares/middlewares'
 
 //controllers
 const user = new UserCtrl()
 const friendCtrl = new FriendCtrl()
 const messageCtrl = new MessageCtrl()
+const favoriteCtrl = new FavoriteCtrl()
+
 
 type Endpoints = {
     [key: string]: ServerRoute<ReqRefDefaults>[]
@@ -99,4 +101,33 @@ export const endpoints:Endpoints = {
                 handler: messageCtrl.sendMessage 
             }
         ],
+    favorites:         
+        [
+            {
+                method: 'GET',
+                path: '/users/{id}/favorites',
+                handler: favoriteCtrl.getUserFavorites,
+            },
+            {
+                method: 'GET',
+                path: '/favorites/{favoriteId}',
+                handler: favoriteCtrl.getOneFavorite
+            },
+            {
+                method: 'DELETE',
+                path: '/favorites/{favoriteId}',
+                handler: favoriteCtrl.deleteFavorite
+            },
+            {
+                method: 'POST',
+                path: '/users/{id}/favorites',
+                handler: favoriteCtrl.addFavorite
+            },
+            {
+                method: 'GET',
+                path: '/favorites',
+                handler: favoriteCtrl.getFavoritesForFeed
+            },
+        ]
+
 }

@@ -22,6 +22,17 @@ export type Message = {
     created_at: Date | string
 }
 
+export type Favorite = {
+    id: number
+    user_id: number
+    title: string
+    link: string
+    image: string
+    country: string
+    publication_date: Date | string
+    description: string
+}
+
 export type UnkownIterable = {[key:string] : unknown}
 
 export type ValidationModel = {

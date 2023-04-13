@@ -12,6 +12,8 @@ const Errors: ErrorDictionary = {
     no_id_friends: boom.badRequest('Veuillez fournir les id des deux utilisateurs concernés dans l\'url de la requête'),
     already_friends: boom.conflict('Les utilisateurs sont déjà amis'),
     already_sent_invitation: boom.conflict('Une demande d`\'ami a déjà été envoyée de la part de l\'utilisateur actuel'),
+    not_found: boom.notFound('Désolé, la ressource n\'a pas été trouvée'),
+    delete_not_found: boom.notFound('La ressource à supprimer n\'a pas été trouvée'),
     //For development only
     db_unavailable: boom.serverUnavailable('Impossible de se connecter à la base de données'),
 }

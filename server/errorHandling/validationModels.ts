@@ -3,8 +3,7 @@ import { ValidationModel } from '../types/types'
 
 export default class ValidationModels{
 
-    // Modèles de validation création utilisateur
-    static createUser: ValidationModel = {
+    static CreateUser: ValidationModel = {
         firstname: {
             required: true,
             maxLength: 255,
@@ -26,7 +25,7 @@ export default class ValidationModels{
         },
     }
 
-    static updateUser: ValidationModel = {
+    static UpdateUser: ValidationModel = {
         firstname: {
             maxLength: 255,
         },
@@ -43,5 +42,30 @@ export default class ValidationModels{
         },
     }
 
+    static CreateFavorite: ValidationModel = {
+        title: {
+            required: true,
+            maxLength: 300,
+        },
+        link: {
+            required: true,
+            maxLength: 355,
+        },
+        image: {
+            required: true,
+            maxLength: 355,
+        },
+        country: {
+            required: true,
+            maxLength: 50,
+        },
+        publication_date: {
+            required: true
+            // à voir pour valider/convertir
+        },
+        description: {
+            maxLength: 355,
+        }
+    }
 
 }

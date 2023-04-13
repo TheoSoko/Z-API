@@ -49,7 +49,7 @@ export default class UserCtrl {
         if (!payload) return Errors.no_payload
 
         let checker = new Checker()
-        let err = checker.check(payload , ValidationModels.createUser)
+        let err: string[] = checker.check(payload, ValidationModels.CreateUser)
         if (err.length > 0) {
             return reply.response({
                 statusCode: 422,
@@ -111,7 +111,7 @@ export default class UserCtrl {
         if (!payload) return Errors.no_payload
 
         let checker = new Checker()
-        let err = checker.check(payload , ValidationModels.updateUser)
+        let err: string[] = checker.check(payload , ValidationModels.UpdateUser)
         if (err.length > 0) {
             return reply.response({
                 statusCode: 422,

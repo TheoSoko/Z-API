@@ -1,7 +1,7 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import Jwt, { HapiJwt } from '@hapi/jwt'
 type Artifacts = HapiJwt.Artifacts
-import * as fs from 'fs/promises'
+//import * as fs from 'fs/promises'
 //keys: async () => fs.readFile('../key/key.txt'),
 
 export const authParams = {
@@ -14,20 +14,35 @@ export const authParams = {
         exp: true,
         maxAgeSec: 18000, // 5 heures
     },
-    validate: (artifacts:Artifacts, request: Request, h: ResponseToolkit) => {
+    validate: (artifacts:Artifacts, request: Request, reply: ResponseToolkit) => {
+        // Vérif du sujet du token (id utilisateur) par rapport au paramètre de route de la requête
+        let sub = artifacts.decoded.payload.sub //subject
+        let userId = request.params.id
+        if (userId && sub !== userId){
+            return {
+                isValid: false,
+                response: reply.response({
+                    statusCode: 401,
+                    error: 'Unauthorized',
+                    message: 'L\'utilisateur à qui appartient le token envoyé n\'est pas le même que celui identifié par l\'URL actuelle',
+                })
+                .code(401)
+            }
+        }
         return {
             isValid: true,
-            credentials: { user: artifacts.decoded.payload }
+            credentials: artifacts.decoded.payload
         }
     }
 }
 
-export function generateToken(id: number | string, email: string): string{
+
+export function generateToken(userId: number | string, email: string): string{
     const token = Jwt.token.generate(
         {
             iss: 'api.zemus.info',
             aud: 'api.zemus.info',
-            sub: String(id),
+            sub: String(userId),
             userEmail: email,
         }
         , 'Coffee Pot'

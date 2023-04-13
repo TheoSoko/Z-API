@@ -1,6 +1,6 @@
 import db from '../db/connection'
-import { UserType } from '../types/queryTypes'
-import { FriendShip, Message } from '../types/types'
+import { UserType, } from '../types/queryTypes'
+import { FriendShip, Message, Favorite } from '../types/types'
 
 
 export default class User{
@@ -25,7 +25,6 @@ export default class User{
         return (
             await db.insert(properties)
             .into('users')
-            .then((result: typeof User.prototype) => result)
             .catch((err:Error) => { 
                 console.log(err)
                 throw err 
@@ -189,5 +188,54 @@ export default class User{
         )
     }
 
+    public async fetchFavorites(userId: number): Promise<Favorite[]> {
+        return (
+            await db
+            .select('id', 'title', 'link', 'image', 'country', 'publication_date', 'description')
+            .from('favorites')
+            .where({user_id: userId})
+            .catch((err:Error) => { 
+                console.log(err)
+                throw err
+            })
+        )
+    }
 
+    public async fetchOneFavorite(favoriteId: number): Promise<Favorite> {
+        return (
+            await db
+            .select('id', 'title', 'link', 'image', 'country', 'publication_date', 'description')
+            .from('favorites')
+            .where({id: favoriteId})
+            .first()
+            .catch((err:Error) => { 
+                console.log(err)
+                throw err
+            })
+        )
+    }
+
+    public async deleteFavorite(favoriteId: number): Promise<number> {
+        return (
+            await db('favorites')
+            .del()
+            .where({id: favoriteId})
+            .catch((err:Error) => { 
+                console.log(err)
+                throw err
+            })
+        )
+    }
+
+    public async createFavorite(properties: Favorite): Promise<number> {
+        return (
+            await db
+            .insert(properties)
+            .into('favorites')
+            .catch((err:Error) => { 
+                console.log(err)
+                throw err
+            })
+        )
+    }
 }   

@@ -192,7 +192,7 @@ const init = async () => {
             },
             {
                 method: 'GET',
-                path: 'reviews',
+                path: 'users/{id}/feed',
                 handler: getReviewsForFeed
             },
         ]
