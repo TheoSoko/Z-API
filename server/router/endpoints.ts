@@ -2,6 +2,7 @@ import UserCtrl from '../controllers/userCtrl'
 import FriendCtrl from '../controllers/friendCtrl'
 import MessageCtrl from '../controllers/messageCtrl'
 import FavoriteCtrl from '../controllers/favoriteCtrl'
+import ReviewCtrl from '../controllers/reviewCtrl'
 import search from '../controllers/searchCtrl'
 import {ServerRoute, ReqRefDefaults} from '@hapi/hapi'
 
@@ -10,11 +11,17 @@ const user = new UserCtrl()
 const friendCtrl = new FriendCtrl()
 const messageCtrl = new MessageCtrl()
 const favoriteCtrl = new FavoriteCtrl()
-
+const reviewCtrl = new ReviewCtrl()
 
 type Endpoints = {
     [key: string]: ServerRoute<ReqRefDefaults>[]
 }
+
+
+//  Important ! 
+//  Pour toutes les routes comprenant un paramètre "{id}", celui-ci se réfère à l'id utilisateur
+//  Celà nous permet de vérifier dans authParams.validate si ({id} dans route) == (Sujet du token)
+
 
 export const endpoints:Endpoints = {
     search:
@@ -101,7 +108,7 @@ export const endpoints:Endpoints = {
                 handler: messageCtrl.sendMessage 
             }
         ],
-    favorites:         
+    favorites:
         [
             {
                 method: 'GET',
@@ -128,6 +135,36 @@ export const endpoints:Endpoints = {
                 path: '/favorites',
                 handler: favoriteCtrl.getFavoritesForFeed
             },
+        ],
+    reviews: 
+        [
+            {
+                method: 'GET',
+                path: '/users/{id}/reviews',
+                handler: reviewCtrl.getUserReviews
+            },
+            {
+                method: 'GET',
+                path: '/reviews/{reviewId}',
+                handler: reviewCtrl.getReviewById
+            },
+            {
+                method: 'DELETE',
+                path: '/reviews/{reviewId}',
+                handler: reviewCtrl.deleteReview
+            },
+            {
+                method: 'POST',
+                path: '/users/{id}/reviews',
+                handler: reviewCtrl.createReview
+            },
+            {
+                method: 'PATCH',
+                path: '/reviews/{reviewId}',
+                handler: reviewCtrl.updateReview
+            },
+
         ]
+
 
 }
