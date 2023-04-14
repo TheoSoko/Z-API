@@ -4,6 +4,7 @@ type Artifacts = HapiJwt.Artifacts
 //import * as fs from 'fs/promises'
 //keys: async () => fs.readFile('../key/key.txt'),
 
+
 export const authParams = {
     keys: 'Coffee Pot',
     verify: {
@@ -14,11 +15,10 @@ export const authParams = {
         exp: true,
         maxAgeSec: 18000, // 5 heures
     },
-    validate: (artifacts:Artifacts, request: Request, reply: ResponseToolkit) => {
-        // Vérif du sujet du token (id utilisateur) par rapport au paramètre de route de la requête
+    validate: (artifacts: Artifacts, request: Request, reply: ResponseToolkit) => {
         let sub = artifacts.decoded.payload.sub //subject
         let userId = request.params.id
-        if (userId && sub !== userId){
+        if (userId !== undefined && sub !== userId){  // (Sujet du token) !== ({id} dans route) 
             return {
                 isValid: false,
                 response: reply.response({
