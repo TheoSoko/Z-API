@@ -1,6 +1,6 @@
 import db from '../db/connection'
 import { UserType, } from '../types/queryTypes'
-import { FriendShip, Message, Favorite } from '../types/types'
+import { FriendShip, Message, Favorite, Review } from '../types/types'
 
 
 export default class User{
@@ -86,7 +86,11 @@ export default class User{
         )
     }
 
-    // Methodes friends
+
+
+/**
+ * FRIENDS
+*/
 
     public async fetchFriends(id:number):Promise<FriendShip[] | void>{
         return (
@@ -159,6 +163,12 @@ export default class User{
         )
     }
 
+
+
+/**
+ * FAVORITES
+*/
+
     public async fetchMessages(id:number, friendId: number):Promise<Message[]>{
         return (
             await db
@@ -187,6 +197,12 @@ export default class User{
             })
         )
     }
+
+
+
+/**
+ * FAVORITES
+*/
 
     public async fetchFavorites(userId: number): Promise<Favorite[]> {
         return (
@@ -238,4 +254,59 @@ export default class User{
             })
         )
     }
+
+
+
+/**
+ * REVIEWS
+*/
+
+
+public async fetchReviews(userId: number): Promise<Review> {
+    try {
+        return (
+            await db('reviews')
+            .select('id', 'theme', 'presentation', 'creation_date')
+            .where({user_id: userId})
+        )
+    }
+    catch(err) { 
+        console.log(err)
+        throw err
+    }
+}
+
+
+public async fetchOneReview(reviewId: number): Promise<Review> {
+    try {
+        return (
+            await db('review_articles as articles')
+            .select(
+                'articles.title', 'articles.link', 'articles.image', 'articles.country', 'articles.publication_date', 'articles.description',
+            )
+            .where({review_id: reviewId})
+            .whereNotNull('title')
+            .union(
+                [
+                    db('review_articles')
+                    .join(
+                        'favorites as fav',
+                        'fav.id', '=', 'review_articles.favorite_id'
+                    )
+                    .select(
+                        'fav.title', 'fav.link', 'fav.image', 'fav.country', 'fav.publication_date', 'fav.description',
+                    )
+                    .where({review_id: reviewId})
+                ]
+            )
+        )
+    }
+    catch (err) { 
+        console.log(err); 
+        throw err 
+    }
+}
+
+
+
 }   

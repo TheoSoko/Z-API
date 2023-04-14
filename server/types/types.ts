@@ -33,6 +33,28 @@ export type Favorite = {
     description: string
 }
 
+export type Article = {
+    id_revue: number
+    title: string
+    link: string
+    image: string
+    country: string
+    publication_date: Date | string
+    description: string 	
+}
+
+export type Review = {
+    id: number
+    user_id: number
+    theme: string
+    presentation: string
+    creation_date: string
+    description: string
+    image: string
+    articles: Favorite[] | Article[]
+}
+
+
 export type UnkownIterable = {[key:string] : unknown}
 
 export type ValidationModel = {
