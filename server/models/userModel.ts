@@ -1,6 +1,6 @@
 import db from '../db/connection'
 import { UserType, } from '../types/queryTypes'
-import { FriendShip, Message, Favorite, Review } from '../types/types'
+import { FriendShip, Message, Favorite, Review, ReviewInput, Article } from '../types/types'
 
 
 export default class User{
@@ -262,51 +262,97 @@ export default class User{
 */
 
 
-public async fetchReviews(userId: number): Promise<Review> {
-    try {
-        return (
-            await db('reviews')
-            .select('id', 'theme', 'presentation', 'creation_date')
-            .where({user_id: userId})
-        )
-    }
-    catch(err) { 
-        console.log(err)
-        throw err
-    }
-}
-
-
-public async fetchOneReview(reviewId: number): Promise<Review> {
-    try {
-        return (
-            await db('review_articles as articles')
-            .select(
-                'articles.title', 'articles.link', 'articles.image', 'articles.country', 'articles.publication_date', 'articles.description',
+    public async fetchReviews(userId: number): Promise<Review> {
+        try {
+            return (
+                await db('reviews')
+                .select('id', 'theme', 'presentation', 'creation_date')
+                .where({user_id: userId})
             )
-            .where({review_id: reviewId})
-            .whereNotNull('title')
-            .union(
-                [
-                    db('review_articles')
-                    .join(
-                        'favorites as fav',
-                        'fav.id', '=', 'review_articles.favorite_id'
-                    )
-                    .select(
-                        'fav.title', 'fav.link', 'fav.image', 'fav.country', 'fav.publication_date', 'fav.description',
-                    )
-                    .where({review_id: reviewId})
-                ]
-            )
-        )
+        }
+        catch(err) { 
+            console.log(err)
+            throw err
+        }
     }
-    catch (err) { 
-        console.log(err); 
-        throw err 
-    }
-}
 
+
+    public async fetchOneReview(reviewId: number): Promise<Review> {
+        try {
+            const articles = (
+                await db('review_articles as articles')
+                .select(
+                    'articles.title', 'articles.link', 'articles.image', 'articles.country', 'articles.publication_date', 'articles.description',
+                )
+                .where({review_id: reviewId})
+                .whereNotNull('title')
+                .union(
+                    [
+                        db('review_articles')
+                        .join(
+                            'favorites as fav',
+                            'fav.id', '=', 'review_articles.favorite_id'
+                        )
+                        .select(
+                            'fav.title', 'fav.link', 'fav.image', 'fav.country', 'fav.publication_date', 'fav.description',
+                        )
+                        .where({review_id: reviewId})
+                    ]
+                )
+            )
+            const review = await db('reviews')
+                    .select('*')
+                    .where({id: reviewId})
+            return {review, ...articles}
+        }
+        catch (err) { 
+            console.log(err); 
+            throw err 
+        }
+    }
+
+    public async deleteReview(reviewId: number): Promise<number> {
+        try {
+            return (
+                await db('reviews')
+                .del()
+                .where({id: reviewId})
+            )
+        }
+        catch (err) { 
+            console.log(err); 
+            throw err 
+        }
+    }
+
+    public async createReview(review: Partial<ReviewInput>, userId: number): Promise<number> {
+        try {
+            return (
+                await db
+                .insert({...review, user_id: userId})
+                .into('reviews')
+            )
+        }
+        catch(err) {
+            console.log(err); 
+            throw err 
+        }
+    }
+
+    public async createArticle(article: Article|number, reviewId: number): Promise<number> {
+        let insert = isNaN(article as number) ? article as Article : {favorite_id: article as number}
+        try {
+            return (
+                await db
+                .insert({review_id: reviewId, ...insert})
+                .into('review_articles')
+            )
+        }
+        catch(err) {
+            console.log(err); 
+            throw err 
+        }
+    }
 
 
 }   
