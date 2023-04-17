@@ -155,6 +155,11 @@ export const endpoints:Endpoints = {
             },
             {
                 method: 'POST',
+                path: '/users/{id}/reviews/articles',
+                handler: reviewCtrl.createReviewAndArticles
+            },
+            {
+                method: 'POST',
                 path: '/users/{id}/reviews',
                 handler: reviewCtrl.createReview
             },
