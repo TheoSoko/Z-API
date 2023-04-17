@@ -37,7 +37,7 @@ export type Article = {
     id_revue: number
     title: string
     link: string
-    image: string
+    image: string | null
     country: string
     publication_date: Date | string
     description: string 	
@@ -53,6 +53,17 @@ export type Review = {
     image: string
     articles: Favorite[] | Article[]
 }
+
+export type ReviewInput = {
+    user_id: number
+    theme: string
+    presentation: string
+    creation_date: string
+    description: string
+    image: string
+    articles: (number|Article)[]
+}
+
 
 
 export type UnkownIterable = {[key:string] : unknown}

@@ -12,16 +12,16 @@ export default class Checker  {
     public validateFunctions:ValidateFunctions = {
         'maxLength': this.checkMaxLength,
         'regex': this.checkRegex,
-        'required': () => {}
+        'required': () => {},
     }
 
     // Fonctions de validation individuelle
-    private checkMaxLength (value:string, name: string, max: number): string | void{
+    private checkMaxLength (value: string, name: string, max: number): string | void{
         if (value && value.length > max){
             return `Le champs "${name}" ne doit pas dépasser ${max} caractères`
         }
     }
-    private checkRegex (value:string, name: string, regex:RegExp): string | void {
+    private checkRegex (value: string, name: string, regex: RegExp): string | void {
         if (value && !value.match(regex)){
             return `Le champs "${name}" est invalide`
         }
@@ -42,11 +42,13 @@ export default class Checker  {
                 errors.push(`Le champs "${fieldName}" est requis`)
                 continue;
             }
+            /*
             if (json[fieldName] !== undefined && typeof json[fieldName] !== 'string'){
                 errors.push(`Le champs "${fieldName}" est mal formaté`)
                 continue;
             }
-            if (json[fieldName] !== undefined && (json[fieldName] as string).length == 0){
+            */
+            if (json[fieldName] !== undefined && (typeof json[fieldName] == 'string' || Array.isArray([fieldName])) && (json[fieldName] as string|any[]).length == 0){
                 errors.push(`Le champs "${fieldName}" ne peut pas être vide`)
                 continue;
             }

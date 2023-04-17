@@ -68,4 +68,47 @@ export default class ValidationModels{
         }
     }
 
+    static CreateReview: ValidationModel = {
+        theme: {
+            required: true,
+            maxLength: 255,
+        },
+        numero: {
+            
+        },
+        presentation: {
+            maxLength: 255,
+        },
+        image: {
+            maxLength: 100,
+        },
+        creation_date: {
+            // Date thing
+        },
+    }
+
+    static ReviewArticle: ValidationModel = {
+        title: {
+            required: true,
+            maxLength: 100
+        },
+        link: {
+            required: true,
+            maxLength: 500
+        },
+        image: {
+            maxLength: 500
+        },
+        country: {
+            maxLength: 50
+        },
+        publication_date: {
+            required: true
+            // Date thing
+        },
+        description: {
+            maxLength: 300
+        }
+    }
+
 }
