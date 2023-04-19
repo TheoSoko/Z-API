@@ -49,7 +49,7 @@ export default class Checker  {
             }
             */
             if (json[fieldName] !== undefined && (typeof json[fieldName] == 'string' || Array.isArray([fieldName])) && (json[fieldName] as string|any[]).length == 0){
-                errors.push(`Le champs "${fieldName}" ne peut pas être vide`)
+                errors.push(`Le champs "${fieldName}" ne peut pas être une chaine vide`)
                 continue;
             }
             if (json[fieldName] === undefined) continue;

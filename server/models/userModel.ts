@@ -1,4 +1,4 @@
-import db from '../db/connection'
+import knex from '../db/knex'
 import { UserType, } from '../types/queryTypes'
 import { FriendShip, Message, Favorite, Review, ReviewInput, Article } from '../types/types'
 
@@ -21,9 +21,9 @@ export default class User{
   
 
 
-    public async createUser(properties: UserType):Promise<number>{
+    public async createUser(properties: UserType):Promise<number[]>{
         return (
-            await db.insert(properties)
+            await knex.insert(properties)
             .into('users')
             .catch((err:Error) => { 
                 console.log(err)
@@ -34,7 +34,7 @@ export default class User{
 
     public async fetchUser(id: number):Promise<typeof User.prototype | void>{
         return (
-            await db.select('id','lastname', 'firstname', 'email', 'profile_picture', 'country')
+            await knex.select('id','lastname', 'firstname', 'email', 'profile_picture', 'country')
                 .from('users')
                 .where({id: id})
                 .first()
@@ -48,7 +48,7 @@ export default class User{
     
     public async fetchUserByEmail(email: string, idOnly?: boolean):Promise<typeof User.prototype | void>{
         return (
-            await db.select(idOnly ? 'id' : 'id', 'password', 'lastname', 'firstname', 'email', 'profile_picture', 'country')
+            await knex.select(idOnly ? 'id' : 'id', 'password', 'lastname', 'firstname', 'email', 'profile_picture', 'country')
                 .from('users')
                 .where({email: email})
                 .first()
@@ -62,7 +62,7 @@ export default class User{
 
     public async updateUser(id:number, payload: Partial<UserType>):Promise<number>{
         return (
-            await db('users')
+            await knex('users')
             .where({id: id})
             .update(payload)
             .then((affectedRows: number) => affectedRows)
@@ -75,7 +75,7 @@ export default class User{
 
     public async deleteUser(id:number):Promise<number>{
         return (
-            await db('users')
+            await knex('users')
             .where({id: id})
             .del()
             .then((affectedRows: number) => affectedRows)
@@ -94,7 +94,7 @@ export default class User{
 
     public async fetchFriends(id:number):Promise<FriendShip[] | void>{
         return (
-            await db
+            await knex
             .select('user1_id','user2_id', 'confirmed', 'date')
             .from('friendships')
             .where({confirmed: true})
@@ -108,11 +108,10 @@ export default class User{
         )
     }
 
-    public async addFriend(id:number, friendId:number):Promise<number>{
+    public async addFriend(id:number, friendId:number):Promise<number[]>{
         return (
-            await db.insert({user1_id: id, user2_id: friendId})
+            await knex.insert({user1_id: id, user2_id: friendId})
             .into('friendships')
-            .then((friendshipId: number) => friendshipId)
             .catch((err:Error) => { 
                 console.log(err)
                 throw err 
@@ -122,7 +121,7 @@ export default class User{
 
     public async fetchFriendshipInfo(id:number, friendId:number):Promise<FriendShip | void>{
         return (
-            await db
+            await knex
             .select('user1_id','user2_id', 'confirmed', 'date')
             .from('friendships')
             .where({user1_id: id, user2_id: friendId})
@@ -138,7 +137,7 @@ export default class User{
 
     public async acceptFriendship(id:number, friendId:number):Promise<number | void>{
         return (
-            await db('friendships')
+            await knex('friendships')
             .update({confirmed: true})
             .where({user1_id: friendId, user2_id: id})
             .then((affectedRows:number) => affectedRows)
@@ -151,7 +150,7 @@ export default class User{
 
     public async deleteFriendShip(id:number, friendId:number):Promise<number>{
         return (
-            await db('friendships')
+            await knex('friendships')
             .del()
             .where({user1_id: id, user2_id: friendId})
             .orWhere({user1_id: friendId, user2_id: id})
@@ -171,7 +170,7 @@ export default class User{
 
     public async fetchMessages(id:number, friendId: number):Promise<Message[]>{
         return (
-            await db
+            await knex
             .select('id', 'user_sender_id', 'user_receiver_id', 'friendship_id', 'content', 'created_at')
             .from('messages')
             .where({user_sender_id: id, user_receiver_id: friendId})
@@ -183,9 +182,9 @@ export default class User{
         )
     }
 
-    public async postMessage(id:number, friendId: number, content: string):Promise<number>{
+    public async postMessage(id:number, friendId: number, content: string):Promise<number[]>{
         return (
-            await db('messages')
+            await knex('messages')
             .insert({
                 content: content, 
                 user_sender_id: id, 
@@ -206,7 +205,7 @@ export default class User{
 
     public async fetchFavorites(userId: number): Promise<Favorite[]> {
         return (
-            await db
+            await knex
             .select('id', 'title', 'link', 'image', 'country', 'publication_date', 'description')
             .from('favorites')
             .where({user_id: userId})
@@ -219,7 +218,7 @@ export default class User{
 
     public async fetchOneFavorite(favoriteId: number): Promise<Favorite> {
         return (
-            await db
+            await knex
             .select('id', 'title', 'link', 'image', 'country', 'publication_date', 'description')
             .from('favorites')
             .where({id: favoriteId})
@@ -233,7 +232,7 @@ export default class User{
 
     public async deleteFavorite(favoriteId: number): Promise<number> {
         return (
-            await db('favorites')
+            await knex('favorites')
             .del()
             .where({id: favoriteId})
             .catch((err:Error) => { 
@@ -243,11 +242,10 @@ export default class User{
         )
     }
 
-    public async createFavorite(properties: Favorite): Promise<number> {
+    public async createFavorite(properties: Favorite): Promise<number[]> {
         return (
-            await db
+            await knex('favorites')
             .insert(properties)
-            .into('favorites')
             .catch((err:Error) => { 
                 console.log(err)
                 throw err
@@ -255,17 +253,17 @@ export default class User{
         )
     }
 
-
+    
 
 /**
  * REVIEWS
 */
 
 
-    public async fetchReviews(userId: number): Promise<Review> {
+    public async fetchReviews(userId: number): Promise<Review[]> {
         try {
             return (
-                await db('reviews')
+                await knex('reviews')
                 .select('id', 'theme', 'presentation', 'creation_date')
                 .where({user_id: userId})
             )
@@ -280,7 +278,7 @@ export default class User{
     public async fetchOneReview(reviewId: number): Promise<Review> {
         try {
             const articles = (
-                await db('review_articles as articles')
+                await knex('review_articles as articles')
                 .select(
                     'articles.title', 'articles.link', 'articles.image', 'articles.country', 'articles.publication_date', 'articles.description',
                 )
@@ -288,10 +286,10 @@ export default class User{
                 .whereNotNull('title')
                 .union(
                     [
-                        db('review_articles')
+                        knex('review_articles')
                         .join(
                             'favorites as fav',
-                            'fav.id', '=', 'review_articles.favorite_id'
+                            'review_articles.favorite_id', '=', 'fav.id'
                         )
                         .select(
                             'fav.title', 'fav.link', 'fav.image', 'fav.country', 'fav.publication_date', 'fav.description',
@@ -300,10 +298,12 @@ export default class User{
                     ]
                 )
             )
-            const review = await db('reviews')
-                    .select('*')
+            const review = await knex('reviews')
+                    .select('user_id', 'theme', 'numero', 'presentation', 'image', 'creation_date')
                     .where({id: reviewId})
-            return {review, ...articles}
+                    .first()
+            review.articles = articles
+            return review
         }
         catch (err) { 
             console.log(err); 
@@ -314,7 +314,7 @@ export default class User{
     public async deleteReview(reviewId: number): Promise<number> {
         try {
             return (
-                await db('reviews')
+                await knex('reviews')
                 .del()
                 .where({id: reviewId})
             )
@@ -328,7 +328,7 @@ export default class User{
     public async createReview(review: Partial<ReviewInput>, userId: number): Promise<number> {
         try {
             return (
-                await db
+                await knex
                 .insert({...review, user_id: userId})
                 .into('reviews')
             )
@@ -339,11 +339,26 @@ export default class User{
         }
     }
 
-    public async createArticle(article: Article|number, reviewId: number): Promise<number> {
+    public async updateReview(id: number, properties: Partial<ReviewInput>): Promise<number> {
+        try {
+            return (
+                await knex('reviews')
+                .where({id: id})
+                .update(properties)
+            )
+        }
+        catch(err) {
+            console.log(err); 
+            throw err 
+        }
+    }
+
+
+    public async createArticle(article: Article|number, reviewId: number): Promise<number[]> {
         let insert = isNaN(article as number) ? article as Article : {favorite_id: article as number}
         try {
             return (
-                await db
+                await knex
                 .insert({review_id: reviewId, ...insert})
                 .into('review_articles')
             )
