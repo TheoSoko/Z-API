@@ -80,8 +80,10 @@ export default class FavoriteCtrl {
 
         let response = (
             await new User().createFavorite(payload)
-            .then((newId: number) => {
-                return {newFavorite: `../favorites/${newId}`}
+            .then((newId: number[]) => {
+                return {
+                    newFavorite: `../favorites/${newId[0]}`
+                }
             })
             .catch(err => Errors[err] || Errors.unidentified)
         )

@@ -87,6 +87,21 @@ export default class ValidationModels{
         },
     }
 
+    static updateReview: ValidationModel = {
+        theme: {
+            maxLength: 255,
+        },
+        numero: {
+            
+        },
+        presentation: {
+            maxLength: 255,
+        },
+        image: {
+            maxLength: 100,
+        },
+    }
+
     static ReviewArticle: ValidationModel = {
         title: {
             required: true,

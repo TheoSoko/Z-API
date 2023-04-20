@@ -1,5 +1,6 @@
+import Knex from 'knex'
 
-const db = require('knex')({
+const knex = Knex({
     client: 'mysql',
     connection: {
       host : '127.0.0.1',
@@ -11,4 +12,4 @@ const db = require('knex')({
   })
   
   
-  export default db
+  export default knex

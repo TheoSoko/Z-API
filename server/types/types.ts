@@ -34,7 +34,7 @@ export type Favorite = {
 }
 
 export type Article = {
-    id_revue: number
+    id_revue?: number
     title: string
     link: string
     image: string | null
@@ -51,7 +51,7 @@ export type Review = {
     creation_date: string
     description: string
     image: string
-    articles: Favorite[] | Article[]
+    articles: string 
 }
 
 export type ReviewInput = {
@@ -61,7 +61,7 @@ export type ReviewInput = {
     creation_date: string
     description: string
     image: string
-    articles: (number|Article)[]
+    articles: (number|Article)[] // (FavoriteId | Article) [] 
 }
 
 
