@@ -1,4 +1,5 @@
 import knex from '../db/knex'
+import Knex from 'knex'
 import { UserType, } from '../types/queryTypes'
 import { FriendShip, Message, Favorite, Review, ReviewInput, Article } from '../types/types'
 
@@ -280,7 +281,7 @@ export default class User{
             const articles = (
                 await knex('review_articles as articles')
                 .select(
-                    'articles.title', 'articles.link', 'articles.image', 'articles.country', 'articles.publication_date', 'articles.description',
+                    'articles.id', 'articles.title', 'articles.link', 'articles.image', 'articles.country', 'articles.publication_date', 'articles.description',
                 )
                 .where({review_id: reviewId})
                 .whereNotNull('title')
@@ -292,7 +293,7 @@ export default class User{
                             'review_articles.favorite_id', '=', 'fav.id'
                         )
                         .select(
-                            'fav.title', 'fav.link', 'fav.image', 'fav.country', 'fav.publication_date', 'fav.description',
+                            'review_articles.id', 'fav.title', 'fav.link', 'fav.image', 'fav.country', 'fav.publication_date', 'fav.description',
                         )
                         .where({review_id: reviewId})
                     ]
@@ -311,19 +312,6 @@ export default class User{
         }
     }
 
-    public async deleteReview(reviewId: number): Promise<number> {
-        try {
-            return (
-                await knex('reviews')
-                .del()
-                .where({id: reviewId})
-            )
-        }
-        catch (err) { 
-            console.log(err); 
-            throw err 
-        }
-    }
 
     public async createReview(review: Partial<ReviewInput>, userId: number): Promise<number> {
         try {
@@ -353,6 +341,19 @@ export default class User{
         }
     }
 
+    public async deleteReview(reviewId: number): Promise<number> {
+        try {
+            return (
+                await knex('reviews')
+                .del()
+                .where({id: reviewId})
+            )
+        }
+        catch (err) { 
+            console.log(err); 
+            throw err 
+        }
+    }
 
     public async createArticle(article: Article|number, reviewId: number): Promise<number[]> {
         let insert = isNaN(article as number) ? article as Article : {favorite_id: article as number}
@@ -368,6 +369,47 @@ export default class User{
             throw err 
         }
     }
+
+    public async deleteArticles(idList: number[], reviewId: number) {
+        try {
+            return (
+                await knex('review_articles')
+                .del()
+                .where((k) => {
+                    k.where({id: idList[0]})
+                    for (let i = 1; i < idList.length; i++){
+                        if (idList[i]) k.orWhere({id: idList[i]})
+                    }
+                })
+                .andWhere({review_id: reviewId})
+            )
+        }
+        catch(err) {
+            console.log(err); 
+            throw err 
+        }
+    }
+
+    public async fetchFeed(friends: number[]) {
+        try {
+            return (
+                await knex('reviews')
+                .select('id', 'theme', 'presentation', 'creation_date')
+                .where((k) => {
+                    k.where({user_id: friends[0]})
+                    for (let i = 1; i < friends.length; i++){
+                        if (friends[i]) k.orWhere({user_id: friends[i]})
+                    }
+                })
+                //.andWhere('creation_date', '>', '2023-01-01')
+            )
+        }
+        catch(err) { 
+            console.log(err)
+            throw err
+        }
+    }
+
 
 
 }   

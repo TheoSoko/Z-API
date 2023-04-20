@@ -238,15 +238,35 @@ export default class ReviewCtrl {
 
     }
 
-    public async deleteReviewArticles (req: Request, reply: ResponseToolkit) {
+
+    public async removeReviewArticles (req: Request, reply: ResponseToolkit) {
 
         if (req.pre.db == null) return Errors.db_unavailable
 
         let reviewId = req.params?.reviewId
         if (!reviewId) return Errors.no_ressource_id
-        if (!req.payload) return Errors.no_payload
+        if (!req.query?.id) return Errors.delete_no_query
 
-        
+        let idList = (req.query?.id.split(','))
+        let idArray: number[] = []
+        idList
+        .forEach((id: string) => {
+            if (isNaN(parseFloat(id)) || !Number.isInteger(parseFloat(id))) {
+                return boom.badRequest('Veuillez fournir les id (nombres entiers) des articles à retirer de la revue, en params de query, comme ceci: ?id=1,2,3')
+            }
+            else idArray.push(parseInt(id))
+        })
+
+        const response = (
+            await new User().deleteArticles(idList, reviewId)
+                .then((res) => {
+                    if (res > 0) return reply.response({affectedRows: res}).code(200)
+                    else return boom.notFound('Aucun article correspondant aux id fournis et liés à cette revue n\'ont été trouvés')
+                })
+                .catch(() => Errors.unidentified)
+        )
+
+        return response
 
     }
 
@@ -276,6 +296,35 @@ export default class ReviewCtrl {
         return await user.updateReview(reviewId, properties)
             .then(() => 'Les champs ont bien été modifiés')
             .catch(() => Errors.unidentified)
+
+    }
+
+
+    public async getFeed (req: Request, reply: ResponseToolkit) {
+
+        if (req.pre.db == null) return Errors.db_unavailable
+
+        let id = req.params?.id
+        if (!id) return Errors.no_user_id
+
+        let user = new User()
+
+        const friendShips = await user.fetchFriends(id).catch(() => null) // renvoie null si erreur
+        if (friendShips == null) return Errors.unidentified
+
+        let friends: number[] = []
+
+        for (const fr of friendShips){
+            let friendId = (id == fr.user1_id) 
+                ? fr.user2_id
+                : fr.user1_id
+            friends.push(friendId)
+        }
+
+        const feedReviews = await user.fetchFeed(friends)
+        
+
+        return 'presque'
 
     }
 
