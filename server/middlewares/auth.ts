@@ -22,8 +22,8 @@ export const authParams = {
             return {
                 isValid: false,
                 response: reply.response({
-                    statusCode: 401,
-                    error: 'Unauthorized',
+                    statusCode: 403,
+                    error: 'Forbidden',
                     message: 'L\'utilisateur à qui appartient le token envoyé n\'est pas le même que celui identifié par l\'URL actuelle',
                 })
                 .code(401)
