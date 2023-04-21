@@ -5,6 +5,23 @@ export type SearchValues = {
     sort: string | null
 }
 
+export type UserType = {
+    id: number | number
+    firstname: string
+    lastname: string
+    email: string
+    password: string
+    country: string
+    fiendShip: {
+        id: number
+        user1Id: number
+        user2Id: number
+        confirmed: boolean 	
+        date: Date | string
+      }
+
+}
+
 export type FriendShip = {
     //id: number
     user1_id: number
@@ -43,7 +60,7 @@ export type Article = {
     description: string 	
 }
 
-export type Review = {
+export type ReviewType = {
     id: number
     user_id: number
     theme: string

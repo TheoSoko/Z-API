@@ -1,5 +1,5 @@
 
-  export interface UserType {
+  export interface UserInput {
     id?: number
     firstname: string
     lastname: string

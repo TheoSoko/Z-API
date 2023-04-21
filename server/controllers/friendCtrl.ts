@@ -1,5 +1,6 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import boom from '@hapi/boom'
+import Friend from '../models/friendModel'
 import User from '../models/userModel'
 import Errors from '../errorHandling/errorDictionary'
 
@@ -13,23 +14,25 @@ export default class FriendCtrl {
         const senderId = req.params?.id
         if (!senderId) return Errors.no_id
 
+        const friend = new Friend()
         const user = new User()
-        const friendships = await user.fetchFriends(senderId).catch(() => null) // renvoie null si erreur
+
+        const friendships = await friend.fetchAll(senderId).catch(() => null) // renvoie null si erreur
 
         if (friendships == null) return Errors.unidentified
 
-        const friends = []
-        for (const friendship of friendships){
-            let friendId = (senderId == friendship.user1_id) 
-                ? friendship.user2_id
-                : friendship.user1_id
-            const friend = await user.fetchUser(friendId)
-            friends.push({
-                ...friend, since: friendship.date
+        const friendList = []
+        for (const fr of friendships){
+            let friendId = (senderId == fr.user1_id) 
+                ? fr.user2_id
+                : fr.user1_id
+            const friendUser = await user.fetch(friendId)
+            friendList.push({
+                ...friendUser, since: fr.date
             })
         }
 
-        return friends
+        return friendList
         
     }
 
@@ -41,8 +44,8 @@ export default class FriendCtrl {
         const friendId = req.params?.friendId
         if (!id || !friendId) return Errors.no_id_friends
 
-        const user = new User()
-        const friendship = await user.fetchFriendshipInfo(id, friendId)
+        const friend = new Friend()
+        const friendship = await friend.fetchFriendship(id, friendId)
 
         //Si déjà amis : 409 Conflict
         if (friendship !== undefined && friendship.confirmed == 1){
@@ -50,7 +53,7 @@ export default class FriendCtrl {
         }
         //Si demande déjà envoyée par l'autre utilisateur : accepte la demande
         if (friendship !== undefined && id == friendship.user2_id){
-            return await user.acceptFriendship(id, friendId)
+            return await friend.accept(id, friendId)
                     .then(() => {
                         return {
                             message: 'Demande d\'ami acceptée',
@@ -68,7 +71,7 @@ export default class FriendCtrl {
         
         //Sinon, crée nouvelle demande
         return (
-            await user.addFriend(id, friendId)
+            await friend.add(id, friendId)
             .then(() => {
                 return reply.response({newFriendship: `./users/${id}/friends/${friendId}`}).code(201)
             })
@@ -76,6 +79,7 @@ export default class FriendCtrl {
                 return Errors[err.code] || Errors.server
             })
         )
+
     }
 
     public async getFriendship (req: Request){
@@ -87,8 +91,8 @@ export default class FriendCtrl {
         if (!id || !friendId){
             return Errors.no_id_friends
         }
-        const user = new User()
-        const response = await user.fetchFriendshipInfo(id, friendId)
+        const friend = new Friend()
+        const response = await friend.fetchFriendship(id, friendId)
             .then( friendship => friendship || boom.notFound() )
             .catch((err: {code: string}) => {
                 return Errors[err.code] || Errors.server
@@ -97,7 +101,7 @@ export default class FriendCtrl {
         return response 
     }
 
-    public async deleteFriendship (req: Request){
+    public async unfriend (req: Request){
         if (req.pre.db == null) return Errors.db_unavailable
 
         const id = req.params?.id
@@ -105,7 +109,7 @@ export default class FriendCtrl {
         if (!id || !friendId){
             return Errors.no_id_friends
         }
-        let response = await new User().deleteFriendShip(id, friendId)
+        let response = await new Friend().remove(id, friendId)
         return {affectedRows: response}
     }
 }

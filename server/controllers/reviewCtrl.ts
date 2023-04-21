@@ -1,10 +1,10 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import boom from '@hapi/boom'
 import Errors from '../errorHandling/errorDictionary'
-import User from '../models/userModel'
+import Review from '../models/reviewModel'
 import Checker from '../errorHandling/validation'
 import ValidationModels from '../errorHandling/validationModels'
-import { Favorite, ReviewInput, Article } from '../types/types'
+import { ReviewInput, Article } from '../types/types'
 
 
 export default class ReviewCtrl {
@@ -17,7 +17,7 @@ export default class ReviewCtrl {
         if (!userId) return Errors.no_user_id 
         
         return (
-            await new User().fetchReviews(userId)
+            await new Review().fetchAll(userId)
             .then((reviews) => {
                 reviews.map((review) => review.articles = `./reviews/${review.id}`)
                 return {
@@ -36,7 +36,7 @@ export default class ReviewCtrl {
         let reviewId = req.params?.reviewId
         if (!reviewId) return Errors.no_ressource_id
         
-        const response = await new User().fetchOneReview(reviewId)
+        const response = await new Review().fetchOne(reviewId)
         .catch(err => Errors[err] || Errors.unidentified)
 
         console.log(response)
@@ -53,7 +53,7 @@ export default class ReviewCtrl {
         if (!reviewId) return Errors.no_ressource_id
         
         let response = (
-            await new User().deleteReview(reviewId)
+            await new Review().delete(reviewId)
             .then((affectedRows: number) => {
                 return (
                     affectedRows > 0 
@@ -119,18 +119,18 @@ export default class ReviewCtrl {
             .code(422)
         }
  
-        let user = new User()
+        let instance = new Review()
 
         //Création de la revue
         const {articles, ...onlyReview} = review
-        let newReviewId = await user.createReview(onlyReview, userId).catch(() => null)
+        let newReviewId = await instance.create(onlyReview, userId).catch(() => null)
         if (newReviewId == null) {
             return boom.badImplementation('crap')
         }
 
         //Création des articles
         for (const article of review.articles){
-            let newArticles = await user.createArticle(article, newReviewId).catch(() => null)
+            let newArticles = await instance.createArticle(article, newReviewId).catch(() => null)
             if (newArticles == null) return boom.badImplementation('Une erreur est survenue à l\'insertion dans la bdd')
         }
         
@@ -168,8 +168,8 @@ export default class ReviewCtrl {
         let review = req.payload as ReviewInput
 
         //Création de la revue
-        let user = new User()
-        let newReviewId = await user.createReview(review, userId).catch(() => null)
+        let instance = new Review()
+        let newReviewId = await instance.create(review, userId).catch(() => null)
         if (newReviewId == null) {
             return boom.badImplementation('crap')
         }
@@ -219,7 +219,7 @@ export default class ReviewCtrl {
         let verifiedArticles = req.payload as (Article|number)[]
 
         for (const article of verifiedArticles){
-            let created = await new User().createArticle(article, reviewId).catch(() => null)
+            let created = await new Review().createArticle(article, reviewId).catch(() => null)
             if (created == null) {
                 return reply.response({
                     statusCode: 500,
@@ -258,7 +258,7 @@ export default class ReviewCtrl {
         })
 
         const response = (
-            await new User().deleteArticles(idList, reviewId)
+            await new Review().deleteArticles(idList, reviewId)
                 .then((res) => {
                     if (res > 0) return reply.response({affectedRows: res}).code(200)
                     else return boom.notFound('Aucun article correspondant aux id fournis et liés à cette revue n\'ont été trouvés')
@@ -292,49 +292,14 @@ export default class ReviewCtrl {
         }
 
         let properties = req.payload as Partial<ReviewInput>
-        let user = new User()
-        return await user.updateReview(reviewId, properties)
+        let instance = new Review()
+        return await instance.update(reviewId, properties)
             .then(() => 'Les champs ont bien été modifiés')
             .catch(() => Errors.unidentified)
 
     }
 
 
-    public async getFeed (req: Request, reply: ResponseToolkit) {
-
-        if (req.pre.db == null) return Errors.db_unavailable
-
-        let id = req.params?.id
-        let page = req.query?.page || '1'
-        if (!id) return Errors.no_user_id
-
-        if (isNaN(page)){
-            return boom.badRequest('Veuillez fournir un numéro de page valide (e.g ?page=69)')
-        }
-
-        let user = new User()
-
-        const friendShips = await user.fetchFriends(id).catch(() => null) // renvoie null si erreur
-        if (friendShips == null) return Errors.unidentified
-       
-        let friends: number[] = []
-
-        for (const fr of friendShips){
-            let friendId = (id == fr.user1_id) 
-                ? fr.user2_id
-                : fr.user1_id
-            friends.push(friendId)
-        }
-
-        const feedReviews = await user.fetchFeed(friends, parseInt(page))
-            .then((res)=> {
-                return res
-            })
-            .catch(() => Errors.unidentified)
-
-        return feedReviews
-
-    }
 
 
 

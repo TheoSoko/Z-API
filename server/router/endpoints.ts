@@ -8,10 +8,10 @@ import {ServerRoute, ReqRefDefaults} from '@hapi/hapi'
 
 //controllers
 const user = new UserCtrl()
-const friendCtrl = new FriendCtrl()
-const messageCtrl = new MessageCtrl()
-const favoriteCtrl = new FavoriteCtrl()
-const reviewCtrl = new ReviewCtrl()
+const friend = new FriendCtrl()
+const message = new MessageCtrl()
+const favorite = new FavoriteCtrl()
+const review = new ReviewCtrl()
 
 type Endpoints = {
     [key: string]: ServerRoute<ReqRefDefaults>[]
@@ -76,22 +76,22 @@ export const endpoints:Endpoints = {
             {
                 method: 'GET',
                 path: '/users/{id}/friends',
-                handler: friendCtrl.getAllFriends
+                handler: friend.getAllFriends
             },
             {
                 method: 'PUT',
                 path: '/users/{id}/friends/{friendId}',
-                handler: friendCtrl.friendRequest
+                handler: friend.friendRequest
             },
             {
                 method: 'GET',
                 path: '/users/{id}/friends/{friendId}',
-                handler: friendCtrl.getFriendship
+                handler: friend.getFriendship
             },
             {
                 method: 'DELETE',
                 path: '/users/{id}/friends/{friendId}',
-                handler: friendCtrl.deleteFriendship
+                handler: friend.unfriend
             },
         ],
     messages: 
@@ -99,13 +99,13 @@ export const endpoints:Endpoints = {
             {
                 method: 'GET',
                 path: '/users/{id}/friends/{friendId}/messages',
-                handler: messageCtrl.getMessages,
+                handler: message.getMessages,
 
             },
             {
                 method: 'POST',
                 path: '/users/{id}/friends/{friendId}/messages',
-                handler: messageCtrl.sendMessage 
+                handler: message.sendMessage 
             }
         ],
     favorites:
@@ -113,27 +113,22 @@ export const endpoints:Endpoints = {
             {
                 method: 'GET',
                 path: '/users/{id}/favorites',
-                handler: favoriteCtrl.getUserFavorites,
+                handler: favorite.getUserFavorites,
             },
             {
                 method: 'GET',
                 path: '/favorites/{favoriteId}',
-                handler: favoriteCtrl.getOneFavorite
+                handler: favorite.getOneFavorite
             },
             {
                 method: 'DELETE',
                 path: '/favorites/{favoriteId}',
-                handler: favoriteCtrl.deleteFavorite
+                handler: favorite.deleteFavorite
             },
             {
                 method: 'POST',
                 path: '/users/{id}/favorites',
-                handler: favoriteCtrl.addFavorite
-            },
-            {
-                method: 'GET',
-                path: '/favorites',
-                handler: favoriteCtrl.getFavoritesForFeed
+                handler: favorite.addFavorite
             },
         ],
     reviews: 
@@ -141,47 +136,47 @@ export const endpoints:Endpoints = {
             {
                 method: 'GET',
                 path: '/users/{id}/reviews',
-                handler: reviewCtrl.getUserReviews
+                handler: review.getUserReviews
             },
             {
                 method: 'GET',
                 path: '/reviews/{reviewId}',
-                handler: reviewCtrl.getReviewById
+                handler: review.getReviewById
             },
             {
                 method: 'DELETE',
                 path: '/users/{id}/reviews/{reviewId}',
-                handler: reviewCtrl.deleteReview
+                handler: review.deleteReview
             },
             {
                 method: 'POST',
                 path: '/users/{id}/reviews/articles',
-                handler: reviewCtrl.createReviewAndArticles
+                handler: review.createReviewAndArticles
             },
             {
                 method: 'POST',
                 path: '/users/{id}/reviews',
-                handler: reviewCtrl.createReview
+                handler: review.createReview
             },
             {
                 method: 'POST',
                 path: '/users/{id}/reviews/{reviewId}/articles',
-                handler: reviewCtrl.postReviewArticles
+                handler: review.postReviewArticles
             },
             {
                 method: 'DELETE',
                 path: '/users/{id}/reviews/{reviewId}/articles',
-                handler: reviewCtrl.removeReviewArticles
+                handler: review.removeReviewArticles
             },
             {
                 method: 'PATCH',
                 path: '/users/{id}/reviews/{reviewId}',
-                handler: reviewCtrl.updateReview
+                handler: review.updateReview
             },
             {
                 method: 'GET',
                 path: '/users/{id}/feed',
-                handler: reviewCtrl.getFeed
+                handler: user.getFeed
             }
 
         ]

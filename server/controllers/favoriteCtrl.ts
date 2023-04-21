@@ -1,9 +1,11 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import Errors from '../errorHandling/errorDictionary'
-import User from '../models/userModel'
+//import User from '../models/userModel'
+import Favorite from '../models/favoriteModel'
+
 import Checker from '../errorHandling/validation'
 import ValidationModels from '../errorHandling/validationModels'
-import { Favorite } from '../types/types'
+import { Favorite as Fav } from '../types/types'
 
 
 export default class FavoriteCtrl {
@@ -17,7 +19,7 @@ export default class FavoriteCtrl {
         let id = req.params?.favoriteId
         if (!id) return Errors.no_id
         
-        let favorites =  await new User().fetchFavorites(id)
+        let favorites =  await new Favorite().fetchAll(id)
           .catch(err => Errors[err] || Errors.unidentified)
 
         return {
@@ -31,7 +33,7 @@ export default class FavoriteCtrl {
         let id = req.params?.favoriteId
         if (!id) return Errors.no_id
         
-        return await new User().fetchOneFavorite(id)
+        return await new Favorite().fetchOne(id)
           .catch(err => Errors[err] || Errors.unidentified)
     }
 
@@ -43,7 +45,7 @@ export default class FavoriteCtrl {
         if (!id) return Errors.no_id
         
         let response = (
-            await new User().deleteFavorite(id)
+            await new Favorite().delete(id)
             .then((affectedRows: number) => {
                 return (
                     affectedRows > 0 
@@ -76,10 +78,10 @@ export default class FavoriteCtrl {
             .code(422)
         }
 
-        let payload = {...req.payload as object, user_id: id} as Favorite
+        let payload = {...req.payload as object, user_id: id} as Fav
 
         let response = (
-            await new User().createFavorite(payload)
+            await new Favorite().create(payload)
             .then((newId: number[]) => {
                 return {
                     newFavorite: `../favorites/${newId[0]}`
@@ -90,13 +92,6 @@ export default class FavoriteCtrl {
         return response
 
     }
-
-
-
-    public async getFavoritesForFeed(req: Request){
-        return 'Ta gueule'
-    }
-
 
 }
 
