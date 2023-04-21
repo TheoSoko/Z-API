@@ -8,7 +8,7 @@ The product has two main aspects: It's a social media platform, and a tool to se
 
 The environment consists of TypeScript, node.js (runtime), Hapi (HTTP library), and Knex (SQL query builder). 
 
-### Tech Stack
+## Tech Stack
 
 **Language:** TypeScript
 
