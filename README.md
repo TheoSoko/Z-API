@@ -1,5 +1,5 @@
 
-#  About The Project
+#  About
 
 This is a RESTful web API built for interfacing with the Zemus cross-platform mobile application. 
 
