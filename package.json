@@ -1,7 +1,7 @@
 {
   "name": "zemus-api",
   "version": "1.0.0",
-  "description": "To make it easy for you to get started with GitLab, here's a list of recommended next steps.",
+  "description": "A RESTful web API built for interfacing with the Zemus cross-platform mobile application. The environment consists of TypeScript, node.js (runtime), Hapi (HTTP library), and Knex (SQL query builder). The product has two main aspects: a social media platform, and a tool to search for news from the entire world. ",
   "main": "server/server.ts",
   "scripts": {
     "build": "nodemon server/server.ts"
