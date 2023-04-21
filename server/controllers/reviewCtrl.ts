@@ -305,13 +305,18 @@ export default class ReviewCtrl {
         if (req.pre.db == null) return Errors.db_unavailable
 
         let id = req.params?.id
+        let page = req.query?.page || '1'
         if (!id) return Errors.no_user_id
+
+        if (isNaN(page)){
+            return boom.badRequest('Veuillez fournir un numéro de page valide (e.g ?page=69)')
+        }
 
         let user = new User()
 
         const friendShips = await user.fetchFriends(id).catch(() => null) // renvoie null si erreur
         if (friendShips == null) return Errors.unidentified
-
+       
         let friends: number[] = []
 
         for (const fr of friendShips){
@@ -321,12 +326,16 @@ export default class ReviewCtrl {
             friends.push(friendId)
         }
 
-        const feedReviews = await user.fetchFeed(friends)
-        
+        const feedReviews = await user.fetchFeed(friends, parseInt(page))
+            .then((res)=> {
+                return res
+            })
+            .catch(() => Errors.unidentified)
 
-        return 'presque'
+        return feedReviews
 
     }
+
 
 
 }

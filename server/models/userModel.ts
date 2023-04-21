@@ -390,18 +390,21 @@ export default class User{
         }
     }
 
-    public async fetchFeed(friends: number[]) {
+    public async fetchFeed(friends: number[], page: number) {
         try {
             return (
                 await knex('reviews')
                 .select('id', 'theme', 'presentation', 'creation_date')
                 .where((k) => {
-                    k.where({user_id: friends[0]})
+                    k.where({user_id: friends[0] | 0}) // A voir, si l'utilisateur n'a pas d'amis (😄 👉) il récupère les revues de l'user 1
                     for (let i = 1; i < friends.length; i++){
                         if (friends[i]) k.orWhere({user_id: friends[i]})
                     }
                 })
+                .limit(50)
+                .offset((page - 1) * 50)
                 //.andWhere('creation_date', '>', '2023-01-01')
+                .orderBy('creation_date', 'desc')
             )
         }
         catch(err) { 
