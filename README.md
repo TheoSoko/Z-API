@@ -16,14 +16,14 @@ The environment consists of TypeScript, node.js (runtime), Hapi (HTTP library), 
 
 **Http library:** [Hapi](https://hapi.dev)
 
-**Authentification:** [Hapi/jwt]('https://hapi.dev/module/jwt/)
+**Authentification:** [Hapi/jwt](https://hapi.dev/module/jwt)
 
 **SQL query builder:** [Knex.js](https://knexjs.org/)
 
 
 
 
-### Run Locally
+## Run Locally
 
 
 
