@@ -178,8 +178,27 @@ export const endpoints:Endpoints = {
                 path: '/users/{id}/feed',
                 handler: user.getFeed
             }
+        ],
+    images: [
+        {
+            method: 'GET',
+            path: '/users/{id}/profile-picture',
+            handler: user.getProfilePic
+        },
+        {
+            method: 'PUT',
+            path: '/users/{id}/profile-picture',
+            options: {
+                payload: {
+                    parse: true,
+                    output: 'file',
+                    maxBytes: 2000000
+                },
+            },
+            handler: user.setProfilePic,
 
-        ]
+        }
+    ]
 
 
 }

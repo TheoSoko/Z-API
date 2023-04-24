@@ -26,10 +26,12 @@
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "@hapi/hapi": "^21.2.1",
+    "@hapi/inert": "^7.1.0",
     "@hapi/jwt": "^3.2.0",
     "@types/boom": "^7.3.2",
     "@types/hapi": "^18.0.8",
     "argon2": "^0.30.3",
+    "jimp": "^0.22.7",
     "knex": "^2.4.2",
     "mysql": "^2.18.1"
   }
