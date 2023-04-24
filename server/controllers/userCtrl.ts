@@ -3,6 +3,9 @@ import Friend from '../models/friendModel'
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import argon2 from 'argon2'
 import boom from '@hapi/boom'
+import fs from 'fs'
+import { pubDir } from '../server'
+import jimp from 'jimp'
 import { UserInput } from '../types/inputTypes'
 import Errors from '../errorHandling/errorDictionary'
 import Checker from '../errorHandling/validation'
@@ -187,6 +190,45 @@ export default class UserCtrl {
 
     }
 
+
+    public async getProfilePic(request: Request, reply: ResponseToolkit) {
+
+        let id = request.params?.id
+        if (!id) return Errors.no_user_id
+
+        return reply.file(`profile-pictures/user-${id}.jpg`)
+    }
+
+
+    public async setProfilePic(request: Request, reply: ResponseToolkit) {
+
+        let id = request.params?.id
+        if (!id) return Errors.no_user_id
+
+        let maxBytes = 2000000
+        let img = request.payload as {path: string, bytes: number}
+        if (img.bytes > maxBytes) return boom.badData('L\'image ne peut pas faire plus de 2 Mo')
+        
+        const maxWidth = 690
+
+        try {
+            jimp.read(img.path)
+                .then( pic => {
+                    console.log('read')
+                    if (pic.bitmap.width > maxWidth) {
+                        pic.resize( maxWidth, jimp.AUTO ) // resizes to maxWidth, auto height
+                    }
+                    pic.writeAsync(`${pubDir}/profile-pictures/user-${id}.jpg`) // converts to jpg and writes
+                })
+            console.log('written')
+        } 
+        catch (err) {
+            console.log(err)
+            return boom.badData('Une erreur est survenue lors de la manipulation de l\'image')
+        }
+
+        return reply.response().code(201)
+    }
 
 
 }
