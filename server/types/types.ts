@@ -87,7 +87,7 @@ export type UnkownIterable = {[key:string] : unknown}
 
 export type ValidationModel = {
     [property: string] : {
-        [option: string] : string | number | RegExp | boolean
+        [option: string] : string | number | RegExp | boolean | undefined
     }
 }
 

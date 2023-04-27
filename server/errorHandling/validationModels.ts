@@ -60,8 +60,8 @@ export default class ValidationModels{
             maxLength: 50,
         },
         publication_date: {
-            required: true
-            // à voir pour valider/convertir
+            required: true,
+            date: true
         },
         description: {
             maxLength: 355,
@@ -81,9 +81,6 @@ export default class ValidationModels{
         },
         image: {
             maxLength: 100,
-        },
-        creation_date: {
-            // Date thing
         },
     }
 
@@ -118,8 +115,8 @@ export default class ValidationModels{
             maxLength: 50
         },
         publication_date: {
-            required: true
-            // Date thing
+            required: true,
+            date: true
         },
         description: {
             maxLength: 300

@@ -1,0 +1,7 @@
+{
+    "gestion dates": [
+        "POST /users/30/favorites (payload.publication_date)",
+        "POST /users/30/reviews/articles (payload.articles[n].publication_date)",
+        "POST /users/30/reviews/41/articles (payload[n].publication_date)"
+    ]
+}

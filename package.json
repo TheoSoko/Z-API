@@ -19,9 +19,11 @@
   "homepage": "https://gitlab.com/TheoSoko/zemus-api#readme",
   "devDependencies": {
     "@types/node": "^18.11.18",
+    "@types/validator": "^13.7.15",
     "nodemon": "^2.0.20",
     "ts-node": "^10.9.1",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "validator": "^13.9.0"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",
@@ -31,6 +33,7 @@
     "@types/boom": "^7.3.2",
     "@types/hapi": "^18.0.8",
     "argon2": "^0.30.3",
+    "gec": "^1.0.3",
     "jimp": "^0.22.7",
     "knex": "^2.4.2",
     "mysql": "^2.18.1"
