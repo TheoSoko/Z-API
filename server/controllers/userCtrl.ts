@@ -158,7 +158,7 @@ export default class UserCtrl {
         if (request.pre.db == null) return Errors.db_unavailable
 
         let id = request.params?.id
-        let page = request.query?.page || '1'
+        let page = request.query?.page ?? '1'
         if (!id) return Errors.no_user_id
 
         if (isNaN(page)){

@@ -93,7 +93,7 @@ export default class FriendCtrl {
         }
         const friend = new Friend()
         const response = await friend.fetchFriendship(id, friendId)
-            .then( friendship => friendship || boom.notFound() )
+            .then( friendship => friendship ?? boom.notFound() )
             .catch((err: {code: string}) => {
                 return Errors[err.code] || Errors.server
             })
