@@ -116,11 +116,12 @@ export default class User{
 
     public async fetchFeed(friends: number[], page: number) {
         try {
-            return (
+
+            let reviews =  (
                 await knex('reviews')
-                .select('id', 'theme', 'presentation', 'creation_date')
+                .select('reviews.id', 'reviews.theme', 'reviews.presentation', 'reviews.creation_date')
                 .where((k) => {
-                    k.where({user_id: friends[0] | 0}) // A voir, si l'utilisateur n'a pas d'amis (😄 👉) il récupère les revues de l'user 1
+                    k.where({user_id: friends[0] ?? 0}) // A voir, si l'utilisateur n'a pas d'amis ( 👈 😄 ) il récupère les revues de l'user 0
                     for (let i = 1; i < friends.length; i++){
                         if (friends[i]) k.orWhere({user_id: friends[i]})
                     }
@@ -130,11 +131,51 @@ export default class User{
                 //.andWhere('creation_date', '>', '2023-01-01')
                 .orderBy('creation_date', 'desc')
             )
+
+            const articles = (
+                await knex('review_articles as articles')
+                .select('articles.image', 'articles.country', 'articles.review_id')
+                .where((k) => {
+                    k.where({review_id: reviews[0].id ?? 0})
+                    for (let i = 1; i < reviews.length; i++){
+                        if (reviews[i]) k.orWhere({review_id: reviews[i].id})
+                    }
+                })
+                .whereNotNull('title')
+                .union(
+                        knex('review_articles')
+                        .select('fav.image', 'fav.country', 'review_articles.review_id')
+                        .join(
+                            'favorites as fav',
+                            'review_articles.favorite_id', '=', 'fav.id'
+                        )
+                        .where((k) => {
+                            k.where({review_id: reviews[0].id ?? 0})
+                            for (let i = 1; i < reviews.length; i++){
+                                if (reviews[i]) k.orWhere({review_id: reviews[i].id})
+                            }
+                        })
+                )
+            )
+
+            //add articles array property to each review
+            reviews = reviews.map(rev => { return {...rev, articles: []} })
+            //If articles.review_id = review.id : push article in review.articles
+            articles.forEach((article) => {
+                let revId = article.review_id
+                reviews.forEach((review) => {
+                    if (review.id == revId) review.articles.push(article)
+                })
+            })
+
+            return reviews
+
         }
         catch(err) { 
             console.log(err)
             throw err
         }
+
     }
 
 
