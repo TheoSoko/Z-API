@@ -200,5 +200,4 @@ export const endpoints:Endpoints = {
         }
     ]
 
-
 }

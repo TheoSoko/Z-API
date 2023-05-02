@@ -18,6 +18,7 @@
   },
   "homepage": "https://gitlab.com/TheoSoko/zemus-api#readme",
   "devDependencies": {
+    "@types/jsdom": "^21.1.1",
     "@types/node": "^18.11.18",
     "@types/validator": "^13.7.15",
     "nodemon": "^2.0.20",
@@ -35,6 +36,7 @@
     "argon2": "^0.30.3",
     "gec": "^1.0.3",
     "jimp": "^0.22.7",
+    "jsdom": "^22.0.0",
     "knex": "^2.4.2",
     "mysql": "^2.18.1"
   }
