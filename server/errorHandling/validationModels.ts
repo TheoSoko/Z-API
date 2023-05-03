@@ -123,4 +123,25 @@ export default class ValidationModels{
         }
     }
 
+    static search: ValidationModel = {
+        q : {
+            required: true
+        },
+        country : {
+            required: true,
+            maxLength: 3
+        },
+        thematic : {
+            required: true
+        },
+        image : {
+
+        },
+        sort : {
+
+        }
+
+    }
+
+
 }
