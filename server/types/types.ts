@@ -1,9 +1,11 @@
 export type SearchValues = {
-    q: string | null,
-    country: string | null,
-    image: boolean | null,
-    sort: string | null
+    q: string,
+    country: string,
+    thematic: string,
+    image?: string,
+    sort?: string
 }
+
 
 export type UserType = {
     id: number | number
