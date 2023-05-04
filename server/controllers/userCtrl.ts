@@ -3,7 +3,6 @@ import Friend from '../models/friendModel'
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import argon2 from 'argon2'
 import boom from '@hapi/boom'
-import fs from 'fs'
 import { pubDir } from '../server'
 import jimp from 'jimp'
 import { UserInput } from '../types/inputTypes'
@@ -11,6 +10,7 @@ import Errors from '../errorHandling/errorDictionary'
 import Checker from '../errorHandling/validation'
 import ValidationModels from '../errorHandling/validationModels'
 import { generateToken } from '../middlewares/auth'
+import knex from '../db/knex'
 
 
 export default class UserCtrl {
@@ -20,6 +20,8 @@ export default class UserCtrl {
 
         if (request.pre.db == null) return Errors.db_unavailable
         
+        //let query = knex.raw('SELECT `id`, `password`, `lastname`, `firstname`, `email`, `profile_picture`, `country` from users')
+
         let payload = request.payload as UserInput
         if (!payload) return Errors.no_payload
         if (!payload.email || !payload.password) return boom.badRequest('Veuillez fournir une adresse email et un mot de passe')
@@ -42,6 +44,7 @@ export default class UserCtrl {
             })
             .code(201)
         )
+        
     }
 
 
@@ -96,12 +99,8 @@ export default class UserCtrl {
         if (!id){
             return Errors.no_id
         }
-        return (
-            await new User().fetch(id)
-            .catch((err: {code: string}) => {
-                return Errors[err.code] || Errors.server
-            })
-        )
+        return await new User().fetch(id)
+            .catch(() => Errors.unidentified)
     }
 
 

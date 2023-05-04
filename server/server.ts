@@ -33,7 +33,7 @@ const init = async () => {
     await server.register(inert)
     await server.register(Jwt)
     server.auth.strategy('default_jwt', 'jwt', authParams)
-    //server.auth.default('default_jwt');
+    server.auth.default('default_jwt');
 
 
     // Enregistrement de toutes les routes
