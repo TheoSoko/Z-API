@@ -36,6 +36,58 @@ export default async function search(request: Request, reply: ResponseToolkit){
     const [getData, setData] = dataClosure<string>()
 */
 
+/*
+    // REST api version
+    // http://127.0.0.1:9090/services/rest/index/Index 1 test/search/field/search
+    {
+        "successful": true,
+        "documents": [
+            {
+                "pos": 0,
+                "score": 2.0,
+                "collapseCount": 0,
+                "fields": [
+                    {
+                        "fieldName": "url",
+                        "values": [ "https://www.lefigaro.fr/dossier/les-questions-du-jour-du-figaro" ]
+                    },
+                    {
+                        "fieldName": "backlinkCount",
+                        "values": [ ">0000000038" ]
+                    },
+                    {
+                        "fieldName": "title",
+                        "values": [ "La question du jour" ]
+                    },
+                    {
+                        "fieldName": "metaDescription",
+                        "values": [ "Blablabla ..." ]
+                    }
+                ],
+                "snippets": [
+                    {
+                        "fieldName": "title",
+                        "values": [ "La question du jour" ],
+                        "highlighted": false
+                    },
+                    {
+                        "fieldName": "fileName",
+                        "values": [],
+                        "highlighted": false
+                    },
+                    {
+                        "fieldName": "content",
+                        "values": [ "{Contenu comprenant les mots de la query }" ],
+                        "highlighted": false
+                    }
+                ],
+                "functions": [],
+                "positions": []
+            },
+        ]
+    }
+*/
+
     const ossData = new Promise <string> (async (success, failure) => {
         http.get('http://127.0.0.1:9090/renderer?use=Index+1+test&name=Rendu+Test+1&query=' + query, (res) => {
             let data = ''

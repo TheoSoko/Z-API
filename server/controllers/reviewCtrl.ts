@@ -78,7 +78,7 @@ export default class ReviewCtrl {
         if (!userId) return Errors.no_user_id
         if (!req.payload) return Errors.no_payload
         
-        // On s'assure déjà que la structure générale est correcte (ValidationModels.CreateReview)
+        // On s'assure déjà que la structure générale de l'objet revue est correcte (ValidationModels.CreateReview)
         let checker = new Checker()
         let errorList: string[] = checker.check(req.payload, { ...ValidationModels.CreateReview, articles: {required: true} })
         if (errorList.length > 0){
@@ -91,22 +91,33 @@ export default class ReviewCtrl {
             .code(422)
         }
 
-        let review = req.payload as ReviewInput
-        if (!Array.isArray(review.articles)){
+        let reviewInput = req.payload as ReviewInput
+        
+        if (!Array.isArray(reviewInput.articles)){
             return boom.badData('le champs "articles" doit être un tableau')
         }
 
-        // Vérification de la validité de chaque article (ValidationModels.ReviewArticle) || isInteger
-        let articleErrors: Array<{index: number, errors: string[]}> = []
-        for (const [index, article] of review.articles.entries()){ 
+        // Chaque article doit être un objet valide (ValidationModels.ReviewArticle) ou un entier (un id de favoris)
+        type error = {
+            index: number, 
+            errors: string[]
+        }
+        let articleErrors: error[] = []
+        for (const [index, article] of reviewInput.articles.entries()){
             if (typeof article !== 'object'){
-                if (isNaN(article) || !Number.isInteger(article)) {
-                    articleErrors.push({index: index, errors: ["Chaque article doit être soit un nombre entier faisant référence à un id de favoris, soit un objet Article"]})
+                if (!isNaN(article) && Number.isInteger(article)) {
+                    continue;
                 }
-                continue;
+                articleErrors.push({
+                    index: index,
+                    errors: ["Chaque article doit être soit un nombre entier faisant référence à un id de favoris, soit un objet Article"]
+                })
             }
             let errs = checker.check(article, ValidationModels.ReviewArticle)
-            if (errs.length > 0) articleErrors.push({ index: index, errors: errs })
+            if (errs.length > 0) articleErrors.push({
+                index: index,
+                errors: errs
+            })
         }
 
         if (articleErrors.length > 0){
@@ -119,18 +130,18 @@ export default class ReviewCtrl {
             .code(422)
         }
  
-        let instance = new Review()
+        let review = new Review()
 
         //Création de la revue
-        const {articles, ...onlyReview} = review
-        let newReviewId = await instance.create(onlyReview, userId).catch(() => null)
+        const {articles, ...onlyReview} = reviewInput
+        let newReviewId = await review.create(onlyReview, userId).catch(() => null)
         if (newReviewId == null) {
             return boom.badImplementation('crap')
         }
 
         //Création des articles
-        for (const article of review.articles){
-            let newArticles = await instance.createArticle(article, newReviewId).catch(() => null)
+        for (const article of reviewInput.articles){
+            let newArticles = await review.createArticle(article, newReviewId).catch(() => null)
             if (newArticles == null) return boom.badImplementation('Une erreur est survenue à l\'insertion dans la bdd')
         }
         
@@ -165,11 +176,11 @@ export default class ReviewCtrl {
             .code(422)
         }
 
-        let review = req.payload as ReviewInput
+        let reviewInput = req.payload as ReviewInput
 
         //Création de la revue
-        let instance = new Review()
-        let newReviewId = await instance.create(review, userId).catch(() => null)
+        let review = new Review()
+        let newReviewId = await review.create(reviewInput, userId).catch(() => null)
         if (newReviewId == null) {
             return boom.badImplementation('crap')
         }
@@ -181,7 +192,7 @@ export default class ReviewCtrl {
     }
 
 
-    public async postReviewArticles (req: Request, reply: ResponseToolkit) {
+    public async postArticles (req: Request, reply: ResponseToolkit) {
 
         if (req.pre.db == null) return Errors.db_unavailable
 
@@ -191,20 +202,26 @@ export default class ReviewCtrl {
 
         if (!Array.isArray(req.payload)) return boom.badData('Le corps de la requête doit être un tableau JSON d\'objets "Article" ou de nombre entiers faisant référence à des id de favoris')
 
-        //Vérification des données
+        // Chaque article doit être :
+        // - ou un objet valide (ValidationModels.ReviewArticle) 
+        // - ou un entier (un id de favoris)
         let errorList: Array<{jsonIndex:number, errors:string[]}> = []
         for (const [index, article] of req.payload.entries()){
-            if ( typeof article !== 'object' ){
-                if (isNaN(article) || !Number.isInteger(article)){
-                    // Si l'article n'est ni un objet ni un nombre entier
-                    errorList.push({jsonIndex: index, errors: ["Chaque article doit être soit un nombre entier faisant référence à un id de favoris, soit un objet Article"]})
+            if (typeof article !== 'object'){
+                if (!isNaN(article) && Number.isInteger(article)) {
+                    continue; // Si c'est un entier
                 }
-                // Si c'est un nombre entier
-                continue;
+                errorList.push({
+                    jsonIndex: index,
+                    errors: ["Chaque article doit être soit un nombre entier faisant référence à un id de favoris, soit un objet Article"]
+                })
             }
             let checker = new Checker()
             let errsArticle: string[] = checker.check(article, ValidationModels.ReviewArticle)
-            if (errsArticle.length > 0) errorList.push({ jsonIndex: index, errors: errsArticle })
+            if (errsArticle.length > 0) errorList.push({ 
+                jsonIndex: index, 
+                errors: errsArticle 
+            })
         }
         if (errorList.length > 0){
             return reply.response({
@@ -239,7 +256,7 @@ export default class ReviewCtrl {
     }
 
 
-    public async removeReviewArticles (req: Request, reply: ResponseToolkit) {
+    public async removeArticles (req: Request, reply: ResponseToolkit) {
 
         if (req.pre.db == null) return Errors.db_unavailable
 
@@ -257,7 +274,8 @@ export default class ReviewCtrl {
             else idArray.push(parseInt(id))
         })
 
-        const response = (
+
+        return  (
             await new Review().deleteArticles(idList, reviewId)
                 .then((res) => {
                     if (res > 0) return reply.response({affectedRows: res}).code(200)
@@ -265,8 +283,6 @@ export default class ReviewCtrl {
                 })
                 .catch(() => Errors.unidentified)
         )
-
-        return response
 
     }
 

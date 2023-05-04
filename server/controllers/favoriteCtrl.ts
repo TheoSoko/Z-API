@@ -1,8 +1,6 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import Errors from '../errorHandling/errorDictionary'
-//import User from '../models/userModel'
 import Favorite from '../models/favoriteModel'
-
 import Checker from '../errorHandling/validation'
 import ValidationModels from '../errorHandling/validationModels'
 import { Favorite as Fav } from '../types/types'
@@ -16,12 +14,13 @@ export default class FavoriteCtrl {
         let sub = req.auth.credentials.sub
         console.log(sub)
 
-        let id = req.params?.favoriteId
+        let id = req.params?.id
         if (!id) return Errors.no_id
         
-        let favorites =  await new Favorite().fetchAll(id)
-          .catch(err => Errors[err] || Errors.unidentified)
+        let favorites =  await new Favorite().fetchAll(id).catch(() => null)
 
+        if (favorites == null) return 'aïe'
+        
         return {
             favorites: favorites
         }

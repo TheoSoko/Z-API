@@ -9,68 +9,79 @@ export default class User{
 
 
     public async create(properties: UserInput):Promise<number[]>{
-        return (
-            await knex.insert(properties)
-            .into('users')
-            .catch((err:Error) => { 
+        return new Promise (async (success, failure) => {
+            try {
+                success(await knex.insert(properties).into('users'))  
+            }
+            catch (err) {
                 console.log(err)
-                throw err 
-            })
-        )
+                failure(err)
+            }
+        })
     }
 
     public async fetch(id: number): Promise<UserType | void>{
-        return (
-            await knex.select('id','lastname', 'firstname', 'email', 'profile_picture', 'country')
+        return new Promise (async (success, failure) => {
+            try {
+                const res = await knex.select('id','lastname', 'firstname', 'email', 'profile_picture', 'country')
                 .from('users')
                 .where({id: id})
                 .first()
-                .then((res: UserType) => res)
-                .catch((err:Error) => { 
-                    console.log(err)
-                    throw err 
-                })
-        )
+                success(res)
+            }
+            catch (err) {
+                console.log(err)
+                failure(err)
+            }
+        })
     }
     
     public async fetchByEmail(email: string, just?: {idOnly: boolean}): Promise<UserType>{
-        return (
-            await knex.select((just?.idOnly) ? "'id'" : "'id', 'password', 'lastname', 'firstname', 'email', 'profile_picture', 'country'")
-                .from('users')
-                .where({email: email})
-                .first()
-                .then((res: UserType) => res)
-                .catch((err:Error) => { 
-                    console.log(err)
-                    throw err 
-                })
-        )
+        let fields = (just?.idOnly) ? ['id'] : ['id', 'password', 'lastname', 'firstname', 'email', 'profile_picture', 'country']
+        try {
+            let resp = await knex('users')
+            .select(fields)
+            .where({email: email})
+            .first()
+            .then((res: UserType) => res)
+            return new Promise(success => success(resp))
+        }
+        catch (err) {
+            console.log(err)
+            return new Promise((_, fail) => fail(err))
+        }
     }
 
     public async update(id:number, payload: Partial<UserInput>): Promise<number>{
-        return (
-            await knex('users')
-            .where({id: id})
-            .update(payload)
-            .then((affectedRows: number) => affectedRows)
-            .catch((err:Error) => { 
+        return new Promise (async (success, failure) => {
+            try {
+                const res = await knex('users')
+                .where({id: id})
+                .update(payload)
+                .then((affectedRows: number) => affectedRows)
+                success(res)
+            }
+            catch (err) { 
                 console.log(err)
-                throw err
-            })
-        )
+                failure(err)
+            }
+        })
     }
 
     public async delete(id:number):Promise<number>{
-        return (
-            await knex('users')
-            .where({id: id})
-            .del()
-            .then((affectedRows: number) => affectedRows)
-            .catch((err:Error) => { 
+        return new Promise (async (success, failure) => {
+            try {
+                success(
+                    await knex('users')
+                    .where({id: id})
+                    .del()
+                )
+            }
+            catch (err) {
                 console.log(err)
-                throw err 
-            })
-        )
+                failure(err)
+            }
+        })
     }
 
 
@@ -80,32 +91,38 @@ export default class User{
 */
 
     public async fetchMessages(id:number, friendId: number): Promise<Message[]>{
-        return (
-            await knex
-            .select('id', 'user_sender_id', 'user_receiver_id', 'friendship_id', 'content', 'created_at')
-            .from('messages')
-            .where({user_sender_id: id, user_receiver_id: friendId})
-            .orWhere({user_sender_id: friendId, user_receiver_id: id})
-            .catch((err:Error) => { 
+        return new Promise (async (success, failure) => {
+            try {
+                const res = await knex
+                .select('id', 'user_sender_id', 'user_receiver_id', 'friendship_id', 'content', 'created_at')
+                .from('messages')
+                .where({user_sender_id: id, user_receiver_id: friendId})
+                .orWhere({user_sender_id: friendId, user_receiver_id: id})
+                success(res)
+            }
+            catch (err) {
                 console.log(err)
-                throw err 
-            })
-        )
+                failure(err)
+            }
+        })
     }
 
     public async postMessage(id:number, friendId: number, content: string): Promise<number[]>{
-        return (
-            await knex('messages')
-            .insert({
-                content: content, 
-                user_sender_id: id, 
-                user_receiver_id: friendId
-            })
-            .catch((err:Error) => { 
+        return new Promise( async (success, failure) => {
+            try {
+                const res = await knex('messages')
+                .insert({
+                    content: content, 
+                    user_sender_id: id, 
+                    user_receiver_id: friendId
+                })
+                success(res)
+            }
+            catch (err) {
                 console.log(err)
-                throw err 
-            })
-        )
+                failure(err)
+            }
+        })
     }
     
 
@@ -116,7 +133,6 @@ export default class User{
 
     public async fetchFeed(friends: number[], page: number) {
         try {
-
             let reviews =  (
                 await knex('reviews')
                 .select('reviews.id', 'reviews.theme', 'reviews.presentation', 'reviews.creation_date')
@@ -158,7 +174,7 @@ export default class User{
                 )
             )
 
-            //add articles array property to each review
+            //add articles (array) property to each review
             reviews = reviews.map(rev => { return {...rev, articles: []} })
             //If articles.review_id = review.id : push article in review.articles
             articles.forEach((article) => {
@@ -168,12 +184,12 @@ export default class User{
                 })
             })
 
-            return reviews
+            return new Promise(success => success(reviews))
 
         }
         catch(err) { 
             console.log(err)
-            throw err
+            return new Promise((_, failure) => failure(err))
         }
 
     }
