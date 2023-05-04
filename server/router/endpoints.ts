@@ -161,12 +161,12 @@ export const endpoints:Endpoints = {
             {
                 method: 'POST',
                 path: '/users/{id}/reviews/{reviewId}/articles',
-                handler: review.postReviewArticles
+                handler: review.postArticles
             },
             {
                 method: 'DELETE',
                 path: '/users/{id}/reviews/{reviewId}/articles',
-                handler: review.removeReviewArticles
+                handler: review.removeArticles
             },
             {
                 method: 'PATCH',
