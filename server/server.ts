@@ -69,7 +69,7 @@ const init = async () => {
 */
 
     await server.start();
-    console.log(`Le serveur court à l\'adresse ${server.info.uri}`);
+    console.log(`Le serveur court à l\'adresse : ${server.info.uri}`);
 }
 
 init()

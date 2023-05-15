@@ -3,9 +3,9 @@ import { SearchValues } from '../types/types'
 import Checker from '../errorHandling/validation'
 import ValidationModels from '../errorHandling/validationModels'
 import boom from '@hapi/boom'
-import http from 'http'
-import jsdom from 'jsdom'
-const { JSDOM } = jsdom;
+import axios, { AxiosRequestConfig } from 'axios';
+
+
 
 export default async function search(request: Request, reply: ResponseToolkit){
 
@@ -88,27 +88,35 @@ export default async function search(request: Request, reply: ResponseToolkit){
     }
 */
 
-    const ossData = new Promise <string> (async (success, failure) => {
-        http.get('http://127.0.0.1:9090/renderer?use=Index+1+test&name=Rendu+Test+1&query=' + query, (res) => {
-            let data = ''
-            res.on('data', (dataChunk) => data += dataChunk )
-            res.on('end', () => success(data) )
-        })
-        .on('error', (err) => failure(err.message))
-    })
-    
+    let index_name  = encodeURIComponent('Index 1 test')
+    let template_name = 'search'
+    const body = JSON.stringify({query: 'rugby'})
 
-    let plainTextHtml = await ossData.catch((err) => {
-        console.log(err)
-        return null
-    })
-    if (!plainTextHtml) return boom.badImplementation('Le fetch de OSS a échoué')
+    const config: AxiosRequestConfig = {
+        method: 'POST',
+        url: 'http://127.0.0.1:9090/services/rest/index/' + index_name + '/search/field/' + template_name,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Host': '127.0.0.1',
+        },
+        data: body,
+      }
+
+      let response = await axios(config)
+      .catch((err) => { console.log(err.response); return null })
+
+      if (!response){
+        return 'pas de réponse'
+      }
+
+      console.log(response)
 
 
-    const dom = new JSDOM(plainTextHtml)
-    const resultsDiv = dom.window.document.querySelector(".oss-result")
-    let divList = resultsDiv?.getElementsByTagName("div")
-    if (!divList) return boom.badImplementation()
+
+
+
+    return '*fart noises*'
 
 
     type ReponseElement = {
@@ -118,12 +126,6 @@ export default async function search(request: Request, reply: ResponseToolkit){
     }
 
     let jsonArray: ReponseElement[] = []
-    for (const div of divList) {
-        let text = div.textContent ? div.textContent.trim() : null
-        if (div.classList[1] == 'ossfieldrdr1') jsonArray.push({title: text, url: null, description: null})
-        if (div.classList[1] == 'ossfieldrdr2') jsonArray[jsonArray.length - 1].url = text
-        if (div.classList[1] == 'ossfieldrdr3') jsonArray[jsonArray.length - 1].description = text
-    }
 
 
     let searchResults = {
@@ -131,6 +133,6 @@ export default async function search(request: Request, reply: ResponseToolkit){
         results: jsonArray
     }
 
-    return reply.response(searchResults).code(200)
+    //test
 
 }

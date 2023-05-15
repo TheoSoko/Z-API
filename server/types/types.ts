@@ -13,15 +13,15 @@ export type UserType = {
     lastname: string
     email: string
     password: string
+    profile_picture: string
     country: string
-    fiendShip: {
+    fiendShip?: {
         id: number
         user1Id: number
         user2Id: number
         confirmed: boolean 	
         date: Date | string
       }
-
 }
 
 export type FriendShip = {
@@ -64,13 +64,20 @@ export type Article = {
 
 export type ReviewType = {
     id: number
-    user_id: number
+    user_id?: number
     theme: string
     presentation: string
     creation_date: string
-    description: string
-    image: string
-    articles: string 
+    description?: string
+    image?: string
+    articles?: Article[] | string
+    owner?: {
+        id: number
+        firstname: string
+        lastname: string
+        profile_picture: string
+        country: string
+    }
 }
 
 export type ReviewInput = {
@@ -83,7 +90,9 @@ export type ReviewInput = {
     articles: (number|Article)[] // (FavoriteId | Article) [] 
 }
 
+export type feed = {
 
+}
 
 export type UnkownIterable = {[key:string] : unknown}
 

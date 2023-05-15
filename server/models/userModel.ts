@@ -1,8 +1,7 @@
 import knex from '../db/knex'
 //import Knex from 'knex'
-import { UserType, } from '../types/types'
 import { UserInput, } from '../types/inputTypes'
-import { FriendShip, Message } from '../types/types'
+import { FriendShip, Message, ReviewType, UserType } from '../types/types'
 
 
 export default class User{  
@@ -20,10 +19,13 @@ export default class User{
         })
     }
 
-    public async fetch(id: number): Promise<UserType | void>{
+    public async fetch(id: number, basicInfo?: 'basicInfo'): Promise<UserType | void>{
+        let fields = basicInfo 
+            ? ['id', 'lastname', 'firstname', 'profile_picture']
+            : ['id', 'lastname', 'firstname', 'email', 'profile_picture', 'country']
         return new Promise (async (success, failure) => {
             try {
-                const res = await knex.select('id','lastname', 'firstname', 'email', 'profile_picture', 'country')
+                const res = await knex.select(fields)
                 .from('users')
                 .where({id: id})
                 .first()
@@ -36,8 +38,8 @@ export default class User{
         })
     }
     
-    public async fetchByEmail(email: string, just?: {idOnly: boolean}): Promise<UserType>{
-        let fields = (just?.idOnly) ? ['id'] : ['id', 'password', 'lastname', 'firstname', 'email', 'profile_picture', 'country']
+    public async fetchByEmail(email: string, idOnly?: 'idOnly'): Promise<UserType>{
+        let fields = idOnly ? ['id'] : ['id', 'password', 'lastname', 'firstname', 'email', 'profile_picture', 'country']
         try {
             let resp = await knex('users')
             .select(fields)
@@ -131,13 +133,14 @@ export default class User{
 */
 
 
-    public async fetchFeed(friends: number[], page: number) {
+    public async fetchFeed(friends: number[], page: number): Promise<ReviewType[] | []>{
         try {
             let reviews =  (
                 await knex('reviews')
-                .select('reviews.id', 'reviews.theme', 'reviews.presentation', 'reviews.creation_date')
-                .where((k) => {
-                    k.where({user_id: friends[0] ?? 0}) // A voir, si l'utilisateur n'a pas d'amis ( 👈 😄 ) il récupère les revues de l'user 0
+                .select('reviews.id', 'reviews.theme', 'reviews.presentation', 'reviews.creation_date', 'user_id', 'reviews.visibility_id')
+                .where('visibility_id', '>=', 2)
+                .andWhere((k) => {
+                    k.andWhere({user_id: friends[0] ?? 0}) // A voir, si l'utilisateur n'a pas d'amis il récupère les revues de l'user 1
                     for (let i = 1; i < friends.length; i++){
                         if (friends[i]) k.orWhere({user_id: friends[i]})
                     }
@@ -148,11 +151,16 @@ export default class User{
                 .orderBy('creation_date', 'desc')
             )
 
+            // Si pas de revues pour le feed
+            if (reviews.length == 0){
+                return []
+            }
+
             const articles = (
                 await knex('review_articles as articles')
                 .select('articles.image', 'articles.country', 'articles.review_id')
                 .where((k) => {
-                    k.where({review_id: reviews[0].id ?? 0})
+                    k.where({review_id: reviews[0].id})
                     for (let i = 1; i < reviews.length; i++){
                         if (reviews[i]) k.orWhere({review_id: reviews[i].id})
                     }

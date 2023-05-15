@@ -6,6 +6,7 @@ import boom from '@hapi/boom'
 import { pubDir } from '../server'
 import jimp from 'jimp'
 import { UserInput } from '../types/inputTypes'
+import { UserType } from '../types/types'
 import Errors from '../errorHandling/errorDictionary'
 import Checker from '../errorHandling/validation'
 import ValidationModels from '../errorHandling/validationModels'
@@ -68,7 +69,7 @@ export default class UserCtrl {
         }
 
         let user = new User()
-        let previous = await user.fetchByEmail((payload as UserInput).email, {idOnly: true})
+        let previous = await user.fetchByEmail((payload as UserInput).email, 'idOnly')
         if (previous){
             return Errors.existing_user
         }
@@ -153,7 +154,6 @@ export default class UserCtrl {
 
     
     public async getFeed (request: Request) {
-
         if (request.pre.db == null) return Errors.db_unavailable
 
         let id = request.params?.id
@@ -170,37 +170,43 @@ export default class UserCtrl {
         const friendShips = await friend.fetchAll(id).catch(() => null) // renvoie null si erreur
         if (friendShips == null) return Errors.unidentified
        
-        let friends: number[] = []
+        const friendIds: number[] = []
+        const friends: UserType[] = []
 
         for (const fr of friendShips){
-            let friendId = (id == fr.user1_id) 
+            let friendId = (id == fr.user1_id)
                 ? fr.user2_id
                 : fr.user1_id
-            friends.push(friendId)
+            friendIds.push(friendId)
+            //
+            let friendInfo = await user.fetch(friendId, 'basicInfo')
+            if (friendInfo) friends.push(friendInfo)
         }
 
-        const feed = await user.fetchFeed(friends, parseInt(page))
-            .then((res)=> {
-                return res
-            })
-            .catch(() => Errors.unidentified)
+        const feed = await user.fetchFeed(friendIds, parseInt(page)).catch(() => null)
+        if (feed == null){
+            return Errors.unidentified
+        }
 
+        feed.forEach((review) => {
+            for (const friend of friends){
+                if (review.user_id == friend.id) {
+                    review.owner = friend
+                }
+            }
+        })
+        
         return feed
-
     }
 
-
     public async getProfilePic(request: Request, reply: ResponseToolkit) {
-
         let id = request.params?.id
         if (!id) return Errors.no_user_id
 
         return reply.file(`profile-pictures/user-${id}.jpg`)
     }
 
-
     public async setProfilePic(request: Request, reply: ResponseToolkit) {
-
         let id = request.params?.id
         if (!id) return Errors.no_user_id
 

@@ -10,11 +10,12 @@ type ValidateFunctions = {
 export default class Checker  {
 
     //Dictionnaire des fonctions 
-    public validateFunctions:ValidateFunctions = {
+    public validateFunctions: ValidateFunctions = {
         'required': () => {},
         'maxLength': this.checkMaxLength,
         'regex': this.checkRegex,
-        'date': this.checkIsDate
+        'date': this.checkIsDate,
+        'isInt': this.checkIsInt,
     }
 
     // Fonctions de validation individuelles
@@ -37,6 +38,11 @@ export default class Checker  {
             return `Le champs "${name}" doit être une date valide (YYYY-MM-DD hh:mm:ss)`
         }
     }
+    private checkIsInt (value: string, name: string): string | void {
+        if (!validator.isInt(value)){
+            return `Le champs "${name}" doit être un nombre entier`
+        }
+    }
 
 
 
@@ -55,7 +61,7 @@ export default class Checker  {
             }
 
             if (json[fieldName] == undefined) {
-                console.log('Champs ' + fieldName + ' indéfini. Ignoré.')
+                //console.log('Champs ' + fieldName + ' indéfini. Ignoré.')
                 continue;
             }
 

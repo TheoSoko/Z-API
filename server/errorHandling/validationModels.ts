@@ -1,9 +1,9 @@
 import { ValidationModel } from '../types/types'
 
 
-export default class ValidationModels{
+const ValidationModels: {[key: string] : ValidationModel} = {
 
-    static CreateUser: ValidationModel = {
+    CreateUser: {
         firstname: {
             required: true,
             maxLength: 255,
@@ -23,9 +23,9 @@ export default class ValidationModels{
         country: {
             required: true
         },
-    }
+    },
 
-    static UpdateUser: ValidationModel = {
+    UpdateUser: {
         firstname: {
             maxLength: 255,
         },
@@ -40,9 +40,9 @@ export default class ValidationModels{
         },
         country: {
         },
-    }
+    },
 
-    static CreateFavorite: ValidationModel = {
+     CreateFavorite: {
         title: {
             required: true,
             maxLength: 300,
@@ -66,9 +66,9 @@ export default class ValidationModels{
         description: {
             maxLength: 355,
         }
-    }
+    },
 
-    static CreateReview: ValidationModel = {
+     CreateReview: {
         theme: {
             required: true,
             maxLength: 255,
@@ -82,9 +82,13 @@ export default class ValidationModels{
         image: {
             maxLength: 100,
         },
-    }
+        visibility_id: {
+            required: true,
+            isInt: true,
+        },
+    },
 
-    static updateReview: ValidationModel = {
+     updateReview: {
         theme: {
             maxLength: 255,
         },
@@ -97,9 +101,9 @@ export default class ValidationModels{
         image: {
             maxLength: 100,
         },
-    }
+    },
 
-    static ReviewArticle: ValidationModel = {
+     ReviewArticle: {
         title: {
             required: true,
             maxLength: 100
@@ -121,9 +125,9 @@ export default class ValidationModels{
         description: {
             maxLength: 300
         }
-    }
+    },
 
-    static search: ValidationModel = {
+    search: {
         q : {
             required: true
         },
@@ -140,8 +144,8 @@ export default class ValidationModels{
         sort : {
 
         }
-
     }
 
-
 }
+
+export default ValidationModels

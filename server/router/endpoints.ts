@@ -29,7 +29,10 @@ export const endpoints:Endpoints = {
             {
                 method: 'GET',
                 path: '/search',
-                handler: search
+                handler: search,
+                options: {
+                    auth: false
+                }
             },
         ],
     test:
