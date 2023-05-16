@@ -1,16 +1,23 @@
 import knex from '../db/knex'
 import { ReviewType, ReviewInput, Article } from '../types/types'
-
+import { visibility } from '../constants/constants'
 
 export default class Review {
 
-    public async fetchAll(userId: number): Promise<ReviewType[]> {
+    public async fetchAll(userId: number, mode: 'private' | 'friends' | 'public'): Promise<ReviewType[]> {
+        let vFriends = visibility['friends']
+        let vPublic = visibility['public']
+
         try {
             const res = await knex('reviews')
             .select (
                 'id', 'theme', 'presentation', 'creation_date'
             )
-            .where({user_id: userId})
+            .where(k => {
+                k.where({user_id: userId})
+                if (mode == 'friends') k.andWhere('visibility_id', '>=', vFriends)
+                if (mode == 'public') k.andWhere('visibility_id', '>=', vPublic)
+            })
             return new Promise(success => success(res))
         }
         catch(err) { 
@@ -46,14 +53,15 @@ export default class Review {
                 )
             )
             let review = await knex('reviews')
-                    .select('user_id', 'theme', 'numero', 'presentation', 'image', 'creation_date')
+                    .select('user_id', 'visibility_id','theme', 'numero', 'presentation', 'image', 'creation_date')
                     .where({id: reviewId})
                     .first()
             review.articles = articles
-            return new Promise(success => success(review))
+            return Promise.resolve(review)
         }
         catch (err) { 
-            return new Promise((_, fail) => { console.log(err); fail(err) })
+            console.log(err)
+            return Promise.reject(err)
         }
     }
 

@@ -138,7 +138,7 @@ export const endpoints:Endpoints = {
         [
             {
                 method: 'GET',
-                path: '/users/{id}/reviews',
+                path: '/users/{userId}/reviews',
                 handler: review.getUserReviews
             },
             {
@@ -195,11 +195,10 @@ export const endpoints:Endpoints = {
                 payload: {
                     parse: true,
                     output: 'file',
-                    maxBytes: 2000000
+                    maxBytes: 2000001
                 },
             },
             handler: user.setProfilePic,
-
         }
     ]
 
