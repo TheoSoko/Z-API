@@ -65,6 +65,7 @@ export type Article = {
 export type ReviewType = {
     id: number
     user_id?: number
+    visibility_id: number
     theme: string
     presentation: string
     creation_date: string

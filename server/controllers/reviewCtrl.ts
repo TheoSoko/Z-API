@@ -5,6 +5,7 @@ import Review from '../models/reviewModel'
 import Checker from '../errorHandling/validation'
 import ValidationModels from '../errorHandling/validationModels'
 import { ReviewInput, Article } from '../types/types'
+import { visibility } from '../constants/constants'
 
 
 export default class ReviewCtrl {
@@ -13,20 +14,27 @@ export default class ReviewCtrl {
     public async getUserReviews (req: Request) {
         if (req.pre.db == null) return Errors.db_unavailable
 
-        let userId = req.params?.id
-        if (!userId) return Errors.no_user_id 
-        
-        return (
-            await new Review().fetchAll(userId)
+        let userId = req.params?.userId
+        if (!userId) return Errors.no_user_id
+
+        let mode: 'private' | 'friends' | 'public'
+        mode = userId == req.auth.credentials.sub
+            ? 'private'
+            : Boolean(req.query?.Friend) // temporaire
+                ? 'friends'
+                : 'public'
+
+        const results = await new Review()
+            .fetchAll(userId, mode)
             .then((reviews) => {
-                reviews.map((review) => review.articles = `./reviews/${review.id}`)
-                return {
-                    reviews: reviews
-                }
+                reviews.forEach(review => review.articles = `./reviews/${review.id}`)
+                return reviews
             })
-            .catch(err => Errors[err] || Errors.unidentified)
-        )
+            .catch(() => null)
         
+        return (results == null)
+            ? Errors.unidentified
+            : { reviews: results }
     }
 
 
@@ -35,11 +43,24 @@ export default class ReviewCtrl {
 
         let reviewId = req.params?.reviewId
         if (!reviewId) return Errors.no_ressource_id
-        
-        const response = await new Review().fetchOne(reviewId)
-        .catch(err => Errors[err] || Errors.unidentified)
+        let ownedRessource: boolean
+        let friend: boolean
 
-        console.log(response)
+        const response = await new Review()
+            .fetchOne(reviewId)
+            .catch(() => null)
+
+        if (response == null) return Errors.unidentified
+
+        ownedRessource = response.user_id == req.auth.credentials.sub
+        friend = Boolean(req.query?.Friend) // temporaire
+
+        if (response.visibility_id == visibility['private']) {
+            if (!ownedRessource) return boom.forbidden('Cette ressource est privée')
+        }
+        if (response.visibility_id == visibility['friends']) {
+            if (!friend && !ownedRessource) return boom.forbidden('Vous n\'avez pas accès à cette ressource')
+        }
 
         return response
     }
