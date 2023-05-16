@@ -1,7 +1,7 @@
 import knex from '../db/knex'
-//import Knex from 'knex'
 import { UserInput, } from '../types/inputTypes'
 import { FriendShip, Message, ReviewType, UserType } from '../types/types'
+import { visibility } from '../constants/constants'
 
 
 export default class User{  
@@ -138,7 +138,7 @@ export default class User{
             let reviews =  (
                 await knex('reviews')
                 .select('reviews.id', 'reviews.theme', 'reviews.presentation', 'reviews.creation_date', 'user_id', 'reviews.visibility_id')
-                .where('visibility_id', '>=', 2)
+                .where('visibility_id', '>=', visibility['friends'])
                 .andWhere((k) => {
                     k.andWhere({user_id: friends[0] ?? 0}) // A voir, si l'utilisateur n'a pas d'amis il récupère les revues de l'user 1
                     for (let i = 1; i < friends.length; i++){
