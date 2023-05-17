@@ -24,7 +24,7 @@ export default class Favorite {
         return new Promise (async (success, failure) => {
             try {
                 let response = await knex
-                .select('id', 'title', 'link', 'image', 'country', 'publication_date', 'description')
+                .select('id', 'user_id', 'title', 'link', 'image', 'country', 'publication_date', 'description')
                 .from('favorites')
                 .where({id: favoriteId})
                 .first()

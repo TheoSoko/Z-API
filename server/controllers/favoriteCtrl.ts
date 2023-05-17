@@ -1,5 +1,6 @@
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import Errors from '../errorHandling/errorDictionary'
+import boom from '@hapi/boom'
 import Favorite from '../models/favoriteModel'
 import Checker from '../errorHandling/validation'
 import ValidationModels from '../errorHandling/validationModels'
@@ -32,29 +33,38 @@ export default class FavoriteCtrl {
         let id = req.params?.favoriteId
         if (!id) return Errors.no_id
         
-        return await new Favorite().fetchOne(id)
-          .catch(err => Errors[err] || Errors.unidentified)
+        const result = await new Favorite()
+            .fetchOne(id)
+            .catch(() => null)
+
+        if (result === null) return Errors.unidentified
+        if (result === undefined) return Errors.not_found_2
+        if (result.user_id != req.auth.credentials.sub) return boom.forbidden('Vous n\'avez pas les autorisations nécessaires pour voir cette ressource')
+        
+        return result
     }
 
 
-    public async deleteFavorite (req: Request) {
+    public async deleteFavorite (req: Request, reply: ResponseToolkit) {
         if (req.pre.db == null) return Errors.db_unavailable
 
         let id = req.params?.favoriteId
         if (!id) return Errors.no_id
         
-        let response = (
-            await new Favorite().delete(id)
-            .then((affectedRows: number) => {
-                return (
-                    affectedRows > 0 
-                    ? "Le favori a été supprimé"
-                    : Errors.delete_not_found
-                )
-            })
-            .catch(err => Errors[err] || Errors.unidentified)
-        )
-        return response
+        const favorite = new Favorite()
+
+        const favoriteCheck = await favorite.fetchOne(id).catch(() => null)
+        if (favoriteCheck === null) return Errors.unidentified
+        if (favoriteCheck === undefined) return Errors.not_found_2
+        if (favoriteCheck.user_id != req.auth.credentials.sub) return boom.forbidden('Vous n\'avez pas les autorisations nécessaires pour voir cette ressource')
+
+        let result = await favorite
+            .delete(id)
+            .then((res) => res ? reply.response().code(204) : Errors.not_found_2)
+            .catch(err => null)
+    
+
+        return result
     }
 
 
