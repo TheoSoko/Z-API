@@ -148,7 +148,7 @@ export const endpoints:Endpoints = {
             },
             {
                 method: 'DELETE',
-                path: '/users/{id}/reviews/{reviewId}',
+                path: '/reviews/{reviewId}',
                 handler: review.deleteReview
             },
             {
@@ -163,17 +163,17 @@ export const endpoints:Endpoints = {
             },
             {
                 method: 'POST',
-                path: '/users/{id}/reviews/{reviewId}/articles',
+                path: '/reviews/{reviewId}/articles',
                 handler: review.postArticles
             },
             {
                 method: 'DELETE',
-                path: '/users/{id}/reviews/{reviewId}/articles',
+                path: '/reviews/{reviewId}/articles',
                 handler: review.removeArticles
             },
             {
                 method: 'PATCH',
-                path: '/users/{id}/reviews/{reviewId}',
+                path: '/reviews/{reviewId}',
                 handler: review.updateReview
             },
             {
