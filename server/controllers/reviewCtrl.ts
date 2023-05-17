@@ -50,7 +50,8 @@ export default class ReviewCtrl {
             .fetchOne(reviewId)
             .catch(() => null)
 
-        if (response == null) return Errors.unidentified
+        if (response === null) return Errors.unidentified
+        if (response === undefined) return Errors.not_found_2
 
         ownedRessource = response.user_id == req.auth.credentials.sub
         friend = Boolean(req.query?.Friend) // temporaire
@@ -66,26 +67,22 @@ export default class ReviewCtrl {
     }
 
 
-    public async deleteReview (req: Request) {
-
+    public async deleteReview (req: Request, reply: ResponseToolkit) {
         if (req.pre.db == null) return Errors.db_unavailable
 
         let reviewId = req.params?.reviewId
         if (!reviewId) return Errors.no_ressource_id
         
-        let response = (
-            await new Review().delete(reviewId)
-            .then((affectedRows: number) => {
-                return (
-                    affectedRows > 0 
-                    ? "La revue a été supprimée"
-                    : Errors.delete_not_found
-                )
-            })
-            .catch(err => Errors[err] || Errors.unidentified)
-        )
-        return response
+        let review = new Review()
+        const rev = await review.fetchOne(reviewId)
+        if (!rev) return Errors.not_found_2
+        
+        if (rev.user_id != req.auth.credentials.sub) return boom.forbidden('Vous n\'avez pas les autorisations nécessaires pour détruire cette ressource')
 
+        return await review
+            .delete(reviewId)
+            .then(() => reply.response().code(204))
+            .catch(() => Errors.unidentified)
     }
 
 
@@ -256,8 +253,14 @@ export default class ReviewCtrl {
 
         let verifiedArticles = req.payload as (Article|number)[]
 
+        //Checking credentials
+        const review = new Review()
+        const checkReview = await review.fetchOneBasic(reviewId)
+        if (!checkReview) return Errors.not_found_2
+        if (checkReview.user_id != req.auth.credentials.sub) return boom.forbidden('Vous n\'avez pas les autorisations nécessaires pour manipuler cette ressource')
+
         for (const article of verifiedArticles){
-            let created = await new Review().createArticle(article, reviewId).catch(() => null)
+            let created = await review.createArticle(article, reviewId).catch(() => null)
             if (created == null) {
                 return reply.response({
                     statusCode: 500,
@@ -278,10 +281,9 @@ export default class ReviewCtrl {
 
 
     public async removeArticles (req: Request, reply: ResponseToolkit) {
-
         if (req.pre.db == null) return Errors.db_unavailable
 
-        let reviewId = req.params?.reviewId
+        let reviewId: number = req.params?.reviewId
         if (!reviewId) return Errors.no_ressource_id
         if (!req.query?.id) return Errors.delete_no_query
 
@@ -295,21 +297,25 @@ export default class ReviewCtrl {
             else idArray.push(parseInt(id))
         })
 
+        const review = new Review()
+        const checkReview = await review.fetchOneBasic(reviewId)
+        if (!checkReview) return Errors.not_found_2
+        if (checkReview.user_id != req.auth.credentials.sub){
+            return boom.forbidden('Vous n\'avez pas les autorisations nécessaires pour manipuler cette ressource')
+        }
 
         return  (
-            await new Review().deleteArticles(idList, reviewId)
-                .then((res) => {
+            await review.deleteArticles(idList, reviewId)
+                .then((res: number) => {
                     if (res > 0) return reply.response({affectedRows: res}).code(200)
                     else return boom.notFound('Aucun article correspondant aux id fournis et liés à cette revue n\'ont été trouvés')
                 })
                 .catch(() => Errors.unidentified)
         )
-
     }
 
 
     public async updateReview (req: Request, reply: ResponseToolkit) {
-
         if (req.pre.db == null) return Errors.db_unavailable
 
         let reviewId = req.params?.reviewId
@@ -328,12 +334,18 @@ export default class ReviewCtrl {
             .code(422)
         }
 
-        let properties = req.payload as Partial<ReviewInput>
         let instance = new Review()
-        return await instance.update(reviewId, properties)
-            .then(() => 'Les champs ont bien été modifiés')
-            .catch(() => Errors.unidentified)
+        let properties = req.payload as Partial<ReviewInput>
 
+        const reviewCheck = await instance.fetchOneBasic(reviewId)
+        if (!reviewCheck) return Errors.not_found_2
+        if (reviewCheck.user_id != req.auth.credentials.sub){
+            return boom.forbidden('Vous n\'avez pas les autorisations nécessaires pour manipuler cette ressource')
+        }
+
+        return await instance.update(reviewId, properties)
+            .then(() => reply.response().code(204))
+            .catch(() => Errors.unidentified)
     }
 
 

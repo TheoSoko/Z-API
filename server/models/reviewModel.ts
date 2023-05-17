@@ -29,7 +29,7 @@ export default class Review {
     }
 
 
-    public async fetchOne(reviewId: number): Promise<ReviewType> {
+    public async fetchOne(reviewId: number): Promise<ReviewType | void> {
         try {
             const articles = (
                 await knex('review_articles as articles')
@@ -56,10 +56,27 @@ export default class Review {
                     .select('user_id', 'visibility_id','theme', 'numero', 'presentation', 'image', 'creation_date')
                     .where({id: reviewId})
                     .first()
+            if (!review) {
+                return new Promise((success) => success(undefined))
+            }
             review.articles = articles
-            return Promise.resolve(review)
+            return new Promise((success) => success(review))
         }
         catch (err) { 
+            console.log(err)
+            return new Promise((_, fail) => fail(err))
+        }
+    }
+
+    public async fetchOneBasic(reviewId: number): Promise<ReviewType | void> {
+        try {
+            const res = await knex('reviews')
+                .select('user_id', 'visibility_id')
+                .where({id: reviewId})
+                .first()
+            return Promise.resolve(res)
+        }
+        catch (err){
             console.log(err)
             return Promise.reject(err)
         }
