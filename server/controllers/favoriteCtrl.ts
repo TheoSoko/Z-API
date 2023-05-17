@@ -12,15 +12,13 @@ export default class FavoriteCtrl {
     public async getUserFavorites (req: Request) {
         if (req.pre.db == null) return Errors.db_unavailable
 
-        let sub = req.auth.credentials.sub
-        console.log(sub)
-
         let id = req.params?.id
         if (!id) return Errors.no_id
         
-        let favorites =  await new Favorite().fetchAll(id).catch(() => null)
-
-        if (favorites == null) return 'aïe'
+        let favorites =  await new Favorite()
+            .fetchAll(id)
+            .catch(() => null)
+        if (favorites == null) return Errors.unidentified
         
         return {
             favorites: favorites
@@ -63,7 +61,6 @@ export default class FavoriteCtrl {
             .then((res) => res ? reply.response().code(204) : Errors.not_found_2)
             .catch(err => null)
     
-
         return result
     }
 
