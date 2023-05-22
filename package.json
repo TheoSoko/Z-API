@@ -2,9 +2,10 @@
   "name": "zemus-api",
   "version": "1.0.0",
   "description": "A RESTful web API built for interfacing with the Zemus cross-platform mobile application. The environment consists of TypeScript, node.js (runtime), Hapi (HTTP library), and Knex (SQL query builder). The product has two main aspects: a social media platform, and a tool to search for news from the entire world. ",
-  "main": "server/server.ts",
+  "main": "server/server.js",
   "scripts": {
-    "build": "nodemon server/server.ts"
+    "build": "nodemon server/server.ts",
+    "prod": "tsc --project tsconfig.production.json & pm2 start build/server.js"
   },
   "repository": {
     "type": "git",
@@ -39,6 +40,7 @@
     "jimp": "^0.22.7",
     "jsdom": "^22.0.0",
     "knex": "^2.4.2",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "pm2": "^5.3.0"
   }
 }
