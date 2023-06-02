@@ -18,7 +18,7 @@ const init = async () => {
 
     const server = Hapi.server({
         port: 8080,
-        host: 'localhost',
+        host: 'api.zemus.info',
         routes: {
             cors: {
                 origin: ['*'],
