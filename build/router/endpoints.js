@@ -34,13 +34,16 @@ exports.endpoints = {
         {
             method: 'GET',
             path: '/test',
-            handler: () => 'C\'est bon'
+            handler: (_, res) => res.response('C\'est bon').code(200),
+            options: {
+                auth: false
+            },
         },
     ],
     user: [
         {
             method: 'POST',
-            path: '/users/sign-in',
+            path: '/sign-in',
             options: {
                 auth: false
             },
