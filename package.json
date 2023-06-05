@@ -5,7 +5,8 @@
   "main": "build/server.js",
   "scripts": {
     "build": "nodemon server/server.ts",
-    "prod": "tsc --project tsconfig.production.json & pm2 start build/server.js"
+    "prod": "tsc --project tsconfig.production.json & pm2 start build/server.js",
+    "prod-js": "pm2 start build/server.js"
   },
   "repository": {
     "type": "git",
