@@ -18,7 +18,8 @@ exports.pubDir = __dirname + '/public';
 const init = async () => {
     const server = hapi_1.default.server({
         port: 80,
-        host: 'api.zemus.info',
+        // host: '2001:41d0:304:300::11a0' || '162.19.92.192',
+        // Si on ne précise pas d'hôte, le serveur écoute sur toutes les interfaces disponibles
         routes: {
             cors: {
                 origin: ['*'],

@@ -18,7 +18,8 @@ const init = async () => {
 
     const server = Hapi.server({
         port: 80,
-        host: 'api.zemus.info',
+        // host: '2001:41d0:304:300::11a0' || '162.19.92.192',
+        // Si on ne précise pas d'hôte, le serveur écoute sur toutes les interfaces disponibles
         routes: {
             cors: {
                 origin: ['*'],
