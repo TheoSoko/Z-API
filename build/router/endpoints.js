@@ -39,11 +39,12 @@ exports.endpoints = {
             handler: (req, res) => {
                 const xFF = req.headers['x-forwarded-for'];
                 const ip = xFF ? "forwarded: " + xFF : req.info.remoteAddress;
+                console.log('*** ***\n');
                 console.log('Recu à ', new Date(req.info.received));
-                console.log('Répondu en ', req.info.completed - req.info.received, ' secondes');
                 console.log('Requête depuis ', ip);
                 console.log('Hôte cherché: ', req.info.host);
-                console.log('*** ***');
+                //console.log('Répondu en ', (req.info.completed == 0) ? "Pas répondu" : (req.info.completed - req.info.received), ' secondes')
+                console.log('*** ***\n');
                 return res.response('C\'est bon, c\'est tout goude.').code(200);
             },
             options: {
