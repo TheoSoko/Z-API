@@ -36,7 +36,16 @@ exports.endpoints = {
         {
             method: 'GET',
             path: '/test',
-            handler: (_, res) => res.response('C\'est bon').code(200),
+            handler: (req, res) => {
+                const xFF = req.headers['x-forwarded-for'];
+                const ip = xFF ? xFF /*.split(',')[0]*/ : req.info.remoteAddress;
+                console.log('À ', req.info.received);
+                console.log('Requête depuis ', ip);
+                console.log('Hôte cherché: ', req.info.host);
+                console.log('url: ', req.url);
+                console.log('*** ***: ', req.url);
+                return res.response('C\'est bon, c\'est tout goude').code(200);
+            },
             options: {
                 auth: false
             },
