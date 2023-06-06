@@ -39,7 +39,8 @@ exports.endpoints = {
             handler: (req, res) => {
                 const xFF = req.headers['x-forwarded-for'];
                 const ip = xFF ? "forwarded: " + xFF : req.info.remoteAddress;
-                console.log('À ', new Date(req.info.received));
+                console.log('Recu à ', new Date(req.info.received));
+                console.log('Répondu en ', req.info.completed - req.info.received, ' secondes');
                 console.log('Requête depuis ', ip);
                 console.log('Hôte cherché: ', req.info.host);
                 console.log('*** ***');
