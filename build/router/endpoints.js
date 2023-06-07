@@ -10,6 +10,8 @@ const messageCtrl_1 = __importDefault(require("../controllers/messageCtrl"));
 const favoriteCtrl_1 = __importDefault(require("../controllers/favoriteCtrl"));
 const reviewCtrl_1 = __importDefault(require("../controllers/reviewCtrl"));
 const searchCtrl_1 = __importDefault(require("../controllers/searchCtrl"));
+const knex_1 = __importDefault(require("../db/knex"));
+const boom_1 = __importDefault(require("@hapi/boom"));
 //controllers
 const user = new userCtrl_1.default();
 const friend = new friendCtrl_1.default();
@@ -51,6 +53,22 @@ exports.endpoints = {
                 auth: false
             },
         },
+    ],
+    test_db: [
+        {
+            method: 'GET',
+            path: '/test-db',
+            options: {
+                auth: false
+            },
+            handler: async (req, res) => {
+                const conn = await knex_1.default.raw('select 1 + 1;').catch((err) => {
+                    console.log(err);
+                    throw boom_1.default.serverUnavailable("Erreur de connexion à la bdd");
+                });
+                return res.response('OK').code(200);
+            }
+        }
     ],
     user: [
         {
