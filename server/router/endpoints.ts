@@ -5,6 +5,9 @@ import FavoriteCtrl from '../controllers/favoriteCtrl'
 import ReviewCtrl from '../controllers/reviewCtrl'
 import search from '../controllers/searchCtrl'
 import {ServerRoute, ReqRefDefaults} from '@hapi/hapi'
+import db from '../db/knex'
+import boom from '@hapi/boom'
+
 
 //controllers
 const user = new UserCtrl()
@@ -47,6 +50,22 @@ export const endpoints:Endpoints = {
                     auth: false
                 },
             },
+        ],
+        test_db: [
+            {
+                method: 'GET',
+                path: '/test-db',
+                options: {
+                    auth: false
+                },
+                handler: async (req, res) => {
+                    const conn = await db.raw('select 1 + 1;').catch((err) => {
+                        console.log(err);
+                        throw boom.serverUnavailable("Erreur de connexion à la bdd")
+                    })
+                    return res.response('OK').code(200)
+                }
+            }
         ],
     user:
         [

@@ -7,7 +7,7 @@ const knex = Knex({
       port : 3306,
       user : 'root',
       password : '',
-      database : 'zemus_api'
+      database : 'zemus_prem'
     }
   })
   
