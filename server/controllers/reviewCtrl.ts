@@ -12,8 +12,7 @@ export default class ReviewCtrl {
 
 
     public async getUserReviews (req: Request) {
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let userId = req.params?.userId
         if (!userId) return Errors.no_user_id
 
@@ -32,15 +31,14 @@ export default class ReviewCtrl {
             })
             .catch(() => null)
         
-        return (results == null)
+        return (results === null)
             ? Errors.unidentified
             : { reviews: results }
     }
 
 
     public async getReviewById (req: Request) {
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let reviewId = req.params?.reviewId
         if (!reviewId) return Errors.no_ressource_id
         let ownedRessource: boolean
@@ -68,8 +66,7 @@ export default class ReviewCtrl {
 
 
     public async deleteReview (req: Request, reply: ResponseToolkit) {
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let reviewId = req.params?.reviewId
         if (!reviewId) return Errors.no_ressource_id
         
@@ -90,8 +87,7 @@ export default class ReviewCtrl {
 
     public async createReviewAndArticles (req: Request, reply: ResponseToolkit) {
 
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let userId = req.params?.id
         if (!userId) return Errors.no_user_id
         if (!req.payload) return Errors.no_payload
@@ -153,14 +149,14 @@ export default class ReviewCtrl {
         //Création de la revue
         const {articles, ...onlyReview} = reviewInput
         let newReviewId = await review.create(onlyReview, userId).catch(() => null)
-        if (newReviewId == null) {
+        if (newReviewId === null) {
             return boom.badImplementation('crap')
         }
 
         //Création des articles
         for (const article of reviewInput.articles){
             let newArticles = await review.createArticle(article, newReviewId).catch(() => null)
-            if (newArticles == null) return boom.badImplementation('Une erreur est survenue à l\'insertion dans la bdd')
+            if (newArticles === null) return boom.badImplementation('Une erreur est survenue à l\'insertion dans la bdd')
         }
         
         return {
@@ -171,8 +167,7 @@ export default class ReviewCtrl {
 
 
     public async createReview (req: Request, reply: ResponseToolkit) {
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let userId = req.params?.id
         if (!userId) return Errors.no_user_id
         if (!req.payload) return Errors.no_payload
@@ -199,7 +194,7 @@ export default class ReviewCtrl {
         //Création de la revue
         let review = new Review()
         let newReviewId = await review.create(reviewInput, userId).catch(() => null)
-        if (newReviewId == null) {
+        if (newReviewId === null) {
             return boom.badImplementation('crap')
         }
         
@@ -212,8 +207,7 @@ export default class ReviewCtrl {
 
     public async postArticles (req: Request, reply: ResponseToolkit) {
 
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let reviewId = req.params?.reviewId
         if (!reviewId) return Errors.no_ressource_id
         if (!req.payload) return Errors.no_payload
@@ -261,7 +255,7 @@ export default class ReviewCtrl {
 
         for (const article of verifiedArticles){
             let created = await review.createArticle(article, reviewId).catch(() => null)
-            if (created == null) {
+            if (created === null) {
                 return reply.response({
                     statusCode: 500,
                     error: "Internal Server Error",
@@ -281,8 +275,7 @@ export default class ReviewCtrl {
 
 
     public async removeArticles (req: Request, reply: ResponseToolkit) {
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let reviewId: number = req.params?.reviewId
         if (!reviewId) return Errors.no_ressource_id
         if (!req.query?.id) return Errors.delete_no_query
@@ -316,8 +309,7 @@ export default class ReviewCtrl {
 
 
     public async updateReview (req: Request, reply: ResponseToolkit) {
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let reviewId = req.params?.reviewId
         if (!reviewId) return Errors.no_ressource_id
         if (!req.payload) return Errors.no_payload

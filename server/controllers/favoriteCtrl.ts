@@ -10,15 +10,14 @@ import { Favorite as Fav } from '../types/types'
 export default class FavoriteCtrl {
 
     public async getUserFavorites (req: Request) {
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let id = req.params?.id
         if (!id) return Errors.no_id
         
         let favorites =  await new Favorite()
             .fetchAll(id)
             .catch(() => null)
-        if (favorites == null) return Errors.unidentified
+        if (favorites === null) return Errors.unidentified
         
         return {
             favorites: favorites
@@ -26,8 +25,7 @@ export default class FavoriteCtrl {
     }
 
     public async getOneFavorite (req: Request) {
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let id = req.params?.favoriteId
         if (!id) return Errors.no_id
         
@@ -44,8 +42,7 @@ export default class FavoriteCtrl {
 
 
     public async deleteFavorite (req: Request, reply: ResponseToolkit) {
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let id = req.params?.favoriteId
         if (!id) return Errors.no_id
         
@@ -66,8 +63,7 @@ export default class FavoriteCtrl {
 
 
     public async addFavorite (req: Request, reply: ResponseToolkit) {
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         let id = req.params?.id
         if (!id) return Errors.no_id
         if (!req.payload) Errors.no_payload

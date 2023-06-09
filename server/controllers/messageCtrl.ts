@@ -7,15 +7,14 @@ export default class MessageController {
 
     public async getMessages(req:Request){
 
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         const id = req.params?.id
         const friendId = req.params?.friendId
         if (!id || !friendId) return Errors.no_id_friends
         
         const user = new User()
         const messages = await user.fetchMessages(id, friendId).catch(() => null)
-        if (messages == null){
+        if (messages === null){
             return Errors.no_payload
         }
 
@@ -37,8 +36,7 @@ export default class MessageController {
 
     public async sendMessage(req:Request, reply:ResponseToolkit){
 
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         const id = req.params.id
         const friendId = req.params.friendId
         const content = (req.payload as Message)?.content
