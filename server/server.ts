@@ -26,7 +26,7 @@ const init = async () => {
             },
             files: {
                 relativeTo: Path.join(__dirname, 'public')
-            }
+            },
         }
     })
 
@@ -38,24 +38,16 @@ const init = async () => {
 
     // Enregistrement de toutes les routes
     // Ajout de la function middleware checkDb à options.pre dans chaque config de route
-    for (const name in endpoints){
-        let configObjects = endpoints[name]
-        for (const config of configObjects){
+    for (const category in endpoints){
+        let routesBunch = endpoints[category]
+        for (const config of routesBunch){
             config.options = {... config.options, pre:[{ method: checkDb, assign: 'db' }] }
         }
-        server.route(configObjects)
+        server.route(routesBunch)
     }
 
 
 /*
-    // Recherche
-    server.route(
-        {
-            method: 'GET',
-            path: '/search',
-            handler: search
-        }
-    )
     
     //Traductions
     server.route(

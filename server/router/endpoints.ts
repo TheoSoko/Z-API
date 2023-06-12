@@ -29,6 +29,21 @@ type Endpoints = {
 // Hapi/jwt vérifie le token à partir du moment ou la premiète section du chemin (e.g /users/) matche un endpoint, même si la méthode http n'est pas supportée, ou si l'url n'existe pas, résultant en de mauvais status d'erreur (401 au lieu de 404 / 405)
 
 export const endpoints:Endpoints = {
+    auth: [
+        {
+            method: 'POST',
+            path: '/sign-in',
+            handler: user.userSignIn,
+            options: {
+                auth: false
+            }
+        },
+        {
+            method: 'GET', //HEAD
+            path: '/auth',
+            handler: user.authFromExt,
+        }
+    ],
     search:
         [
             {
@@ -51,32 +66,8 @@ export const endpoints:Endpoints = {
                 },
             },
         ],
-        test_db: [
-            {
-                method: 'GET',
-                path: '/test-db',
-                options: {
-                    auth: false
-                },
-                handler: async (req, res) => {
-                    const conn = await db.raw('select 1 + 1;').catch((err) => {
-                        console.log(err);
-                        throw boom.serverUnavailable("Erreur de connexion à la bdd")
-                    })
-                    return res.response('OK').code(200)
-                }
-            }
-        ],
     user:
         [
-            {
-                method: 'POST',
-                path: '/sign-in',
-                options: {
-                    auth: false
-                },
-                handler: user.userSignIn
-            },
             {
                 method: 'POST',
                 path: '/users',
@@ -224,6 +215,23 @@ export const endpoints:Endpoints = {
             },
             handler: user.setProfilePic,
         }
-    ]
-
+    ],
+    /*
+    test_db: [
+        {
+            method: 'GET',
+            path: '/test-db',
+            options: {
+                auth: false
+            },
+            handler: async (req, res) => {
+                const conn = await db.raw('select 1 + 1;').catch((err) => {
+                    console.log(err);
+                    throw boom.serverUnavailable("Erreur de connexion à la bdd")
+                })
+                return res.response('OK').code(200)
+            }
+        }
+    ],
+    */
 }

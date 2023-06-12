@@ -45,6 +45,16 @@ export default class UserCtrl {
         
     }
 
+    public async authFromExt (request: Request, reply: ResponseToolkit){
+        let id = request.query.id
+        if (!id){
+            throw Errors.no_user_id
+        }
+        if (request.auth.credentials.sub != id){
+            throw boom.unauthorized("L'id en paramètre d'url n'est pas le même que celui indiqué dans le token")
+        }
+        return reply.response().code(204)
+    }
 
     public async createUser (request: Request, reply: ResponseToolkit){
         if (!request.payload) {
