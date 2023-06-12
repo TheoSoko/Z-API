@@ -9,17 +9,15 @@ export default class FriendCtrl {
 
     public async getAllFriends (req: Request){
 
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         const senderId = req.params?.id
         if (!senderId) return Errors.no_id
 
         const friend = new Friend()
         const user = new User()
 
-        const friendships = await friend.fetchAll(senderId).catch(() => null) // renvoie null si erreur
-
-        if (friendships == null) return Errors.unidentified
+        const friendships = await friend.fetchAll(senderId)
+            .catch(() => { throw Errors.unidentified })
 
         const friendList = []
         for (const fr of friendships){
@@ -38,8 +36,7 @@ export default class FriendCtrl {
 
     public async friendRequest (req: Request, reply: ResponseToolkit){
 
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         const id = req.params?.id
         const friendId = req.params?.friendId
         if (!id || !friendId) return Errors.no_id_friends
@@ -84,8 +81,7 @@ export default class FriendCtrl {
 
     public async getFriendship (req: Request){
         
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         const id = req.params?.id
         const friendId = req.params?.friendId
         if (!id || !friendId){
@@ -102,8 +98,7 @@ export default class FriendCtrl {
     }
 
     public async unfriend (req: Request){
-        if (req.pre.db == null) return Errors.db_unavailable
-
+        
         const id = req.params?.id
         const friendId = req.params?.friendId
         if (!id || !friendId){

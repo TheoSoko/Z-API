@@ -10,8 +10,6 @@ const messageCtrl_1 = __importDefault(require("../controllers/messageCtrl"));
 const favoriteCtrl_1 = __importDefault(require("../controllers/favoriteCtrl"));
 const reviewCtrl_1 = __importDefault(require("../controllers/reviewCtrl"));
 const searchCtrl_1 = __importDefault(require("../controllers/searchCtrl"));
-const knex_1 = __importDefault(require("../db/knex"));
-const boom_1 = __importDefault(require("@hapi/boom"));
 //controllers
 const user = new userCtrl_1.default();
 const friend = new friendCtrl_1.default();
@@ -24,6 +22,21 @@ const review = new reviewCtrl_1.default();
 // Note :
 // Hapi/jwt vérifie le token à partir du moment ou la premiète section du chemin (e.g /users/) matche un endpoint, même si la méthode http n'est pas supportée, ou si l'url n'existe pas, résultant en de mauvais status d'erreur (401 au lieu de 404 / 405)
 exports.endpoints = {
+    auth: [
+        {
+            method: 'POST',
+            path: '/sign-in',
+            handler: user.userSignIn,
+            options: {
+                auth: false
+            }
+        },
+        {
+            method: 'GET',
+            path: '/auth',
+            handler: user.authFromExt,
+        }
+    ],
     search: [
         {
             method: 'GET',
@@ -54,31 +67,7 @@ exports.endpoints = {
             },
         },
     ],
-    test_db: [
-        {
-            method: 'GET',
-            path: '/test-db',
-            options: {
-                auth: false
-            },
-            handler: async (req, res) => {
-                const conn = await knex_1.default.raw('select 1 + 1;').catch((err) => {
-                    console.log(err);
-                    throw boom_1.default.serverUnavailable("Erreur de connexion à la bdd");
-                });
-                return res.response('OK').code(200);
-            }
-        }
-    ],
     user: [
-        {
-            method: 'POST',
-            path: '/sign-in',
-            options: {
-                auth: false
-            },
-            handler: user.userSignIn
-        },
         {
             method: 'POST',
             path: '/users',
@@ -221,5 +210,23 @@ exports.endpoints = {
             },
             handler: user.setProfilePic,
         }
-    ]
+    ],
+    /*
+    test_db: [
+        {
+            method: 'GET',
+            path: '/test-db',
+            options: {
+                auth: false
+            },
+            handler: async (req, res) => {
+                const conn = await db.raw('select 1 + 1;').catch((err) => {
+                    console.log(err);
+                    throw boom.serverUnavailable("Erreur de connexion à la bdd")
+                })
+                return res.response('OK').code(200)
+            }
+        }
+    ],
+    */
 };

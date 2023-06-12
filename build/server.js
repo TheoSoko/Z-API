@@ -27,7 +27,7 @@ const init = async () => {
             },
             files: {
                 relativeTo: Path.join(__dirname, 'public')
-            }
+            },
         }
     });
     await server.register(inert_1.default);
@@ -36,22 +36,14 @@ const init = async () => {
     server.auth.default('default_jwt');
     // Enregistrement de toutes les routes
     // Ajout de la function middleware checkDb à options.pre dans chaque config de route
-    for (const name in endpoints_1.endpoints) {
-        let configObjects = endpoints_1.endpoints[name];
-        for (const config of configObjects) {
+    for (const category in endpoints_1.endpoints) {
+        let routesBunch = endpoints_1.endpoints[category];
+        for (const config of routesBunch) {
             config.options = { ...config.options, pre: [{ method: middlewares_1.checkDb, assign: 'db' }] };
         }
-        server.route(configObjects);
+        server.route(routesBunch);
     }
     /*
-        // Recherche
-        server.route(
-            {
-                method: 'GET',
-                path: '/search',
-                handler: search
-            }
-        )
         
         //Traductions
         server.route(

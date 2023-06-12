@@ -1,15 +1,17 @@
 import Knex from 'knex'
 
-const knex = Knex({
+const dbConnection = {
     client: 'mysql',
     connection: {
       host : '127.0.0.1',
       port : 3306,
       user : 'root',
       password : '',
-      database : 'zemus_prem'
+      database : 'zemus_api'
     }
-  })
+}
+
+const knex = Knex(dbConnection)
+
   
-  
-  export default knex
+export default knex

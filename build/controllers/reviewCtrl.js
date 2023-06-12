@@ -12,8 +12,6 @@ const constants_1 = require("../constants/constants");
 class ReviewCtrl {
     async getUserReviews(req) {
         var _a, _b;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let userId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.userId;
         if (!userId)
             return errorDictionary_1.default.no_user_id;
@@ -30,14 +28,12 @@ class ReviewCtrl {
             return reviews;
         })
             .catch(() => null);
-        return (results == null)
+        return (results === null)
             ? errorDictionary_1.default.unidentified
             : { reviews: results };
     }
     async getReviewById(req) {
         var _a, _b;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let reviewId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.reviewId;
         if (!reviewId)
             return errorDictionary_1.default.no_ressource_id;
@@ -64,8 +60,6 @@ class ReviewCtrl {
     }
     async deleteReview(req, reply) {
         var _a;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let reviewId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.reviewId;
         if (!reviewId)
             return errorDictionary_1.default.no_ressource_id;
@@ -82,8 +76,6 @@ class ReviewCtrl {
     }
     async createReviewAndArticles(req, reply) {
         var _a;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let userId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
         if (!userId)
             return errorDictionary_1.default.no_user_id;
@@ -136,13 +128,13 @@ class ReviewCtrl {
         //Création de la revue
         const { articles, ...onlyReview } = reviewInput;
         let newReviewId = await review.create(onlyReview, userId).catch(() => null);
-        if (newReviewId == null) {
+        if (newReviewId === null) {
             return boom_1.default.badImplementation('crap');
         }
         //Création des articles
         for (const article of reviewInput.articles) {
             let newArticles = await review.createArticle(article, newReviewId).catch(() => null);
-            if (newArticles == null)
+            if (newArticles === null)
                 return boom_1.default.badImplementation('Une erreur est survenue à l\'insertion dans la bdd');
         }
         return {
@@ -151,8 +143,6 @@ class ReviewCtrl {
     }
     async createReview(req, reply) {
         var _a;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let userId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
         if (!userId)
             return errorDictionary_1.default.no_user_id;
@@ -177,7 +167,7 @@ class ReviewCtrl {
         //Création de la revue
         let review = new reviewModel_1.default();
         let newReviewId = await review.create(reviewInput, userId).catch(() => null);
-        if (newReviewId == null) {
+        if (newReviewId === null) {
             return boom_1.default.badImplementation('crap');
         }
         return {
@@ -186,8 +176,6 @@ class ReviewCtrl {
     }
     async postArticles(req, reply) {
         var _a;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let reviewId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.reviewId;
         if (!reviewId)
             return errorDictionary_1.default.no_ressource_id;
@@ -236,7 +224,7 @@ class ReviewCtrl {
             return boom_1.default.forbidden('Vous n\'avez pas les autorisations nécessaires pour manipuler cette ressource');
         for (const article of verifiedArticles) {
             let created = await review.createArticle(article, reviewId).catch(() => null);
-            if (created == null) {
+            if (created === null) {
                 return reply.response({
                     statusCode: 500,
                     error: "Internal Server Error",
@@ -253,8 +241,6 @@ class ReviewCtrl {
     }
     async removeArticles(req, reply) {
         var _a, _b, _c;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let reviewId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.reviewId;
         if (!reviewId)
             return errorDictionary_1.default.no_ressource_id;
@@ -288,8 +274,6 @@ class ReviewCtrl {
     }
     async updateReview(req, reply) {
         var _a;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let reviewId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.reviewId;
         if (!reviewId)
             return errorDictionary_1.default.no_ressource_id;

@@ -11,15 +11,13 @@ const validationModels_1 = __importDefault(require("../errorHandling/validationM
 class FavoriteCtrl {
     async getUserFavorites(req) {
         var _a;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let id = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
         if (!id)
             return errorDictionary_1.default.no_id;
         let favorites = await new favoriteModel_1.default()
             .fetchAll(id)
             .catch(() => null);
-        if (favorites == null)
+        if (favorites === null)
             return errorDictionary_1.default.unidentified;
         return {
             favorites: favorites
@@ -27,8 +25,6 @@ class FavoriteCtrl {
     }
     async getOneFavorite(req) {
         var _a;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let id = (_a = req.params) === null || _a === void 0 ? void 0 : _a.favoriteId;
         if (!id)
             return errorDictionary_1.default.no_id;
@@ -45,8 +41,6 @@ class FavoriteCtrl {
     }
     async deleteFavorite(req, reply) {
         var _a;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let id = (_a = req.params) === null || _a === void 0 ? void 0 : _a.favoriteId;
         if (!id)
             return errorDictionary_1.default.no_id;
@@ -66,8 +60,6 @@ class FavoriteCtrl {
     }
     async addFavorite(req, reply) {
         var _a;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let id = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
         if (!id)
             return errorDictionary_1.default.no_id;

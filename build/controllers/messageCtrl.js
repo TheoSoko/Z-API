@@ -8,15 +8,13 @@ const errorDictionary_1 = __importDefault(require("../errorHandling/errorDiction
 class MessageController {
     async getMessages(req) {
         var _a, _b;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         const id = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
         const friendId = (_b = req.params) === null || _b === void 0 ? void 0 : _b.friendId;
         if (!id || !friendId)
             return errorDictionary_1.default.no_id_friends;
         const user = new userModel_1.default();
         const messages = await user.fetchMessages(id, friendId).catch(() => null);
-        if (messages == null) {
+        if (messages === null) {
             return errorDictionary_1.default.no_payload;
         }
         // Tri des messages entre "envoyés" et "reçus"
@@ -36,8 +34,6 @@ class MessageController {
     }
     async sendMessage(req, reply) {
         var _a;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         const id = req.params.id;
         const friendId = req.params.friendId;
         const content = (_a = req.payload) === null || _a === void 0 ? void 0 : _a.content;

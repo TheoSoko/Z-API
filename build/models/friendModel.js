@@ -11,8 +11,7 @@ class Friend {
                 .select('user1_id', 'user2_id', 'confirmed', 'date')
                 .where({ confirmed: true })
                 .andWhere({ user1_id: id })
-                .orWhere({ user2_id: id })
-                .then((res) => res);
+                .orWhere({ user2_id: id });
             return new Promise((success) => success(res));
         }
         catch (err) {

@@ -10,16 +10,13 @@ const errorDictionary_1 = __importDefault(require("../errorHandling/errorDiction
 class FriendCtrl {
     async getAllFriends(req) {
         var _a;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         const senderId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
         if (!senderId)
             return errorDictionary_1.default.no_id;
         const friend = new friendModel_1.default();
         const user = new userModel_1.default();
-        const friendships = await friend.fetchAll(senderId).catch(() => null); // renvoie null si erreur
-        if (friendships == null)
-            return errorDictionary_1.default.unidentified;
+        const friendships = await friend.fetchAll(senderId)
+            .catch(() => { throw errorDictionary_1.default.unidentified; });
         const friendList = [];
         for (const fr of friendships) {
             let friendId = (senderId == fr.user1_id)
@@ -34,8 +31,6 @@ class FriendCtrl {
     }
     async friendRequest(req, reply) {
         var _a, _b;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         const id = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
         const friendId = (_b = req.params) === null || _b === void 0 ? void 0 : _b.friendId;
         if (!id || !friendId)
@@ -74,8 +69,6 @@ class FriendCtrl {
     }
     async getFriendship(req) {
         var _a, _b;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         const id = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
         const friendId = (_b = req.params) === null || _b === void 0 ? void 0 : _b.friendId;
         if (!id || !friendId) {
@@ -91,8 +84,6 @@ class FriendCtrl {
     }
     async unfriend(req) {
         var _a, _b;
-        if (req.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         const id = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
         const friendId = (_b = req.params) === null || _b === void 0 ? void 0 : _b.friendId;
         if (!id || !friendId) {

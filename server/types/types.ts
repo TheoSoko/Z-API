@@ -12,7 +12,7 @@ export type UserType = {
     firstname: string
     lastname: string
     email: string
-    password: string
+    password?: string
     profile_picture: string
     country: string
     fiendShip?: {

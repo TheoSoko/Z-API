@@ -18,9 +18,6 @@ export default class UserCtrl {
 
 
     public async userSignIn (request: Request, reply: ResponseToolkit){
-
-        if (request.pre.db == null) return Errors.db_unavailable
-        
         //let query = knex.raw('SELECT `id`, `password`, `lastname`, `firstname`, `email`, `profile_picture`, `country` from users')
 
         let payload = request.payload as UserInput
@@ -28,13 +25,13 @@ export default class UserCtrl {
         if (!payload.email || !payload.password) return boom.badRequest('Veuillez fournir une adresse email et un mot de passe')
         
         let user = new User()
-        let userInfo = await user.fetchByEmail(payload.email).catch(() => null) // Si erreur, renvoie null
+        let userInfo = await user.fetchByEmail(payload.email)
+            .catch(() => { throw Errors.unidentified })
 
-        if (userInfo === null) return Errors.unidentified
-        if (userInfo === undefined || (!await argon2.verify(userInfo.password, payload.password))){
+        if (userInfo === undefined || !await argon2.verify(userInfo.password!, payload.password)){
             return boom.unauthorized('Adresse email ou mot de passe incorrect')
         }
-        userInfo.password = ''
+        delete userInfo.password
         
         const token: string = generateToken(userInfo.id, payload.email)
 
@@ -48,13 +45,22 @@ export default class UserCtrl {
         
     }
 
+    public async authFromExt (request: Request, reply: ResponseToolkit){
+        let id = request.query.id
+        if (!id){
+            throw Errors.no_user_id
+        }
+        if (request.auth.credentials.sub != id){
+            throw boom.unauthorized("L'id en paramètre d'url n'est pas le même que celui indiqué dans le token")
+        }
+        return reply.response().code(204)
+    }
 
     public async createUser (request: Request, reply: ResponseToolkit){
-
-        if (request.pre.db == null) return Errors.db_unavailable
-        
+        if (!request.payload) {
+            throw Errors.no_payload
+        }
         let payload = request.payload as UserInput
-        if (!payload) return Errors.no_payload
 
         let checker = new Checker()
         let err: string[] = checker.check(payload, ValidationModels.CreateUser)
@@ -70,45 +76,39 @@ export default class UserCtrl {
 
         let user = new User()
         let previous = await user.fetchByEmail((payload as UserInput).email, 'idOnly')
-        if (previous){
+        if (previous != undefined){
             return Errors.existing_user
         }
         
         payload.password = await argon2.hash(payload.password)
+            .catch(() => {
+                throw boom.badData('Une erreur est survenue avec le mot de passe, veuillez en fournir un autre.')
+            })
 
-        try {
-            const newUser = await user.create(payload as UserInput)
-            return (
-                reply.response({
-                    id: newUser,
-                    newRessource: `./users/${newUser}`
-                })
-                .code(201)
-            )
-        } catch (error) {
-            const err = error as {code: string}
-            return Errors[err.code] || Errors.unidentified
-        }
-        
+        const newUser = await user.create(payload as UserInput)
+            .catch(() => { throw Errors.unidentified })
+
+        return reply.response({
+                id: newUser,
+                newRessource: `./users/${newUser}`
+            })
+            .code(201)
     }
 
 
     public async getUserById (request: Request){
-        if (request.pre.db == null) return Errors.db_unavailable
-
         let id = request.params?.id
         if (!id){
             return Errors.no_id
         }
         return await new User().fetch(id)
-            .catch(() => Errors.unidentified)
+            .catch(() => {
+                throw Errors.unidentified
+            })
     }
 
 
     public async updateUser (request: Request, reply: ResponseToolkit){
-
-        if (request.pre.db == null) return Errors.db_unavailable
-
         let payload = request.payload as UserInput
         let userId = request.params.id
         if (!userId) return Errors.no_id
@@ -130,20 +130,22 @@ export default class UserCtrl {
             payload.password = await argon2.hash(payload.password)
         }
 
-        try {
-            let updated = await new User().update(userId, payload)
-            return reply.response({updatedRows: updated}).code(200)
-        } 
-        catch (error) {
-            const err = error as {code: string}
-            return Errors[err.code] || Errors.unidentified
+        const user = new User() 
+        if (payload.email){
+            let previous = await user.fetchByEmail(payload.email, 'idOnly')
+            if (previous != undefined){
+                return Errors.existing_user
+            }    
         }
+
+        let updated = await user.update(userId, payload)
+            .catch(() => { throw Errors.unidentified })
+
+        return reply.response({updatedRows: updated}).code(200)
     }
 
 
     public async deleteUser (request: Request){
-        if (request.pre.db == null) return Errors.db_unavailable
-
         let id = request.params.id
         if (!parseInt(id)){
             return boom.badRequest()
@@ -154,8 +156,6 @@ export default class UserCtrl {
 
     
     public async getFeed (request: Request) {
-        if (request.pre.db == null) return Errors.db_unavailable
-
         let id = request.params?.id
         let page = request.query?.page ?? '1'
         if (!id) return Errors.no_user_id
@@ -168,7 +168,7 @@ export default class UserCtrl {
         let friend = new Friend()
 
         const friendShips = await friend.fetchAll(id).catch(() => null) // renvoie null si erreur
-        if (friendShips == null) return Errors.unidentified
+        if (friendShips === null) return Errors.unidentified
        
         const friendIds: number[] = []
         const friends: UserType[] = []
@@ -184,7 +184,7 @@ export default class UserCtrl {
         }
 
         const feed = await user.fetchFeed(friendIds, parseInt(page)).catch(() => null)
-        if (feed == null){
+        if (feed === null){
             return Errors.unidentified
         }
 

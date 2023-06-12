@@ -15,8 +15,6 @@ const validationModels_1 = __importDefault(require("../errorHandling/validationM
 const auth_1 = require("../middlewares/auth");
 class UserCtrl {
     async userSignIn(request, reply) {
-        if (request.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         //let query = knex.raw('SELECT `id`, `password`, `lastname`, `firstname`, `email`, `profile_picture`, `country` from users')
         let payload = request.payload;
         if (!payload)
@@ -24,13 +22,12 @@ class UserCtrl {
         if (!payload.email || !payload.password)
             return boom_1.default.badRequest('Veuillez fournir une adresse email et un mot de passe');
         let user = new userModel_1.default();
-        let userInfo = await user.fetchByEmail(payload.email).catch(() => null); // Si erreur, renvoie null
-        if (userInfo === null)
-            return errorDictionary_1.default.unidentified;
-        if (userInfo === undefined || (!await argon2_1.default.verify(userInfo.password, payload.password))) {
+        let userInfo = await user.fetchByEmail(payload.email)
+            .catch(() => { throw errorDictionary_1.default.unidentified; });
+        if (userInfo === undefined || !await argon2_1.default.verify(userInfo.password, payload.password)) {
             return boom_1.default.unauthorized('Adresse email ou mot de passe incorrect');
         }
-        userInfo.password = '';
+        delete userInfo.password;
         const token = (0, auth_1.generateToken)(userInfo.id, payload.email);
         return (reply.response({
             user: userInfo,
@@ -38,12 +35,21 @@ class UserCtrl {
         })
             .code(201));
     }
+    async authFromExt(request, reply) {
+        let id = request.query.id;
+        if (!id) {
+            throw errorDictionary_1.default.no_user_id;
+        }
+        if (request.auth.credentials.sub != id) {
+            throw boom_1.default.unauthorized("L'id en paramètre d'url n'est pas le même que celui indiqué dans le token");
+        }
+        return reply.response().code(204);
+    }
     async createUser(request, reply) {
-        if (request.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
+        if (!request.payload) {
+            throw errorDictionary_1.default.no_payload;
+        }
         let payload = request.payload;
-        if (!payload)
-            return errorDictionary_1.default.no_payload;
         let checker = new validation_1.default();
         let err = checker.check(payload, validationModels_1.default.CreateUser);
         if (err.length > 0) {
@@ -57,37 +63,33 @@ class UserCtrl {
         }
         let user = new userModel_1.default();
         let previous = await user.fetchByEmail(payload.email, 'idOnly');
-        if (previous) {
+        if (previous != undefined) {
             return errorDictionary_1.default.existing_user;
         }
-        payload.password = await argon2_1.default.hash(payload.password);
-        try {
-            const newUser = await user.create(payload);
-            return (reply.response({
-                id: newUser,
-                newRessource: `./users/${newUser}`
-            })
-                .code(201));
-        }
-        catch (error) {
-            const err = error;
-            return errorDictionary_1.default[err.code] || errorDictionary_1.default.unidentified;
-        }
+        payload.password = await argon2_1.default.hash(payload.password)
+            .catch(() => {
+            throw boom_1.default.badData('Une erreur est survenue avec le mot de passe, veuillez en fournir un autre.');
+        });
+        const newUser = await user.create(payload)
+            .catch(() => { throw errorDictionary_1.default.unidentified; });
+        return reply.response({
+            id: newUser,
+            newRessource: `./users/${newUser}`
+        })
+            .code(201);
     }
     async getUserById(request) {
         var _a;
-        if (request.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let id = (_a = request.params) === null || _a === void 0 ? void 0 : _a.id;
         if (!id) {
             return errorDictionary_1.default.no_id;
         }
         return await new userModel_1.default().fetch(id)
-            .catch(() => errorDictionary_1.default.unidentified);
+            .catch(() => {
+            throw errorDictionary_1.default.unidentified;
+        });
     }
     async updateUser(request, reply) {
-        if (request.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let payload = request.payload;
         let userId = request.params.id;
         if (!userId)
@@ -108,18 +110,18 @@ class UserCtrl {
         if (payload.password != null) {
             payload.password = await argon2_1.default.hash(payload.password);
         }
-        try {
-            let updated = await new userModel_1.default().update(userId, payload);
-            return reply.response({ updatedRows: updated }).code(200);
+        const user = new userModel_1.default();
+        if (payload.email) {
+            let previous = await user.fetchByEmail(payload.email, 'idOnly');
+            if (previous != undefined) {
+                return errorDictionary_1.default.existing_user;
+            }
         }
-        catch (error) {
-            const err = error;
-            return errorDictionary_1.default[err.code] || errorDictionary_1.default.unidentified;
-        }
+        let updated = await user.update(userId, payload)
+            .catch(() => { throw errorDictionary_1.default.unidentified; });
+        return reply.response({ updatedRows: updated }).code(200);
     }
     async deleteUser(request) {
-        if (request.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let id = request.params.id;
         if (!parseInt(id)) {
             return boom_1.default.badRequest();
@@ -129,8 +131,6 @@ class UserCtrl {
     }
     async getFeed(request) {
         var _a, _b, _c;
-        if (request.pre.db == null)
-            return errorDictionary_1.default.db_unavailable;
         let id = (_a = request.params) === null || _a === void 0 ? void 0 : _a.id;
         let page = (_c = (_b = request.query) === null || _b === void 0 ? void 0 : _b.page) !== null && _c !== void 0 ? _c : '1';
         if (!id)
@@ -141,7 +141,7 @@ class UserCtrl {
         let user = new userModel_1.default();
         let friend = new friendModel_1.default();
         const friendShips = await friend.fetchAll(id).catch(() => null); // renvoie null si erreur
-        if (friendShips == null)
+        if (friendShips === null)
             return errorDictionary_1.default.unidentified;
         const friendIds = [];
         const friends = [];
@@ -156,7 +156,7 @@ class UserCtrl {
                 friends.push(friendInfo);
         }
         const feed = await user.fetchFeed(friendIds, parseInt(page)).catch(() => null);
-        if (feed == null) {
+        if (feed === null) {
             return errorDictionary_1.default.unidentified;
         }
         feed.forEach((review) => {

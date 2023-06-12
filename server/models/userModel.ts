@@ -20,7 +20,7 @@ export default class User{
     }
 
     public async fetch(id: number, basicInfo?: 'basicInfo'): Promise<UserType | void>{
-        let fields = basicInfo 
+        let fields = basicInfo
             ? ['id', 'lastname', 'firstname', 'profile_picture']
             : ['id', 'lastname', 'firstname', 'email', 'profile_picture', 'country']
         return new Promise (async (success, failure) => {

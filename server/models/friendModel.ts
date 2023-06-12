@@ -5,14 +5,13 @@ import { FriendShip } from '../types/types'
 export default class Friend {
 
 
-    public async fetchAll(id:number): Promise<FriendShip[] | void>{
+    public async fetchAll(id:number): Promise<FriendShip[] | []>{
         try {
             const res = await knex('friendships')
                 .select('user1_id','user2_id', 'confirmed', 'date')
                 .where({confirmed: true})
                 .andWhere({user1_id: id})
                 .orWhere({user2_id: id})
-                .then((res: FriendShip[]) => res)
             return new Promise ((success) => success(res))
         }
         catch (err) {
