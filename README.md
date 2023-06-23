@@ -7,10 +7,12 @@ The product has two main aspects:
 - A social media platform
 - A tool to search for news from the entire world. 
 
-
 The environment mainly consists of Node, TypeScript, Hapi, Knex.
 
 This project is the main building block of the Zemus backend application, and is deployed on a cloud instance, running on Debian.
+
+The engine we used for web crawling, indexing, and search is an open source software called [OpenSearchServer](https://github.com/jaeksoft/opensearchserver). It is implemented as an independant service with its own API.
+
 
 ## Tech Stack
 
@@ -59,7 +61,7 @@ The transpilation to JS before the project builds and runs happens "under the ho
 On all endpoints except mentionned :
 - Response header - **Accept**: application/json, application/x-www-form-urlencoded 
 - Request header -  __Authorization__: bearer ***\*actual token\****
-- All query or body parameter followed by a __"?"__ is optionnal
+- All query or body parameter followed by a __"?"__ are optionnal
 
 
 #### Auth :
@@ -130,7 +132,7 @@ On all endpoints except mentionned :
 
 
 
-### Infos pratiques
+## Infos pratiques
 
 Le projet est situé dans ```/srv/zemus-api``` sur le serveur.
 
