@@ -57,8 +57,8 @@ The transpilation to JS before the project builds and runs happens "under the ho
 
 ### Endpoints :
 On all endpoints except mentionned :
-- **Accept**: application/json, application/x-www-form-urlencoded 
-- ***headers***: "Authorization": "bearer __* actual token *__"
+- Response header - **Accept**: application/json, application/x-www-form-urlencoded 
+- Request header -  __Authorization__: bearer ***\*actual token\****
 - All query or body parameter followed by a __"?"__ is optionnal
 
 
@@ -93,18 +93,40 @@ On all endpoints except mentionned :
 - ```PUT /users/{id}/friends/{id}``` <br/> 
 - ```GET /users/{id}/friends/{id}``` <br/> 
 
-#### favorites :
+#### Favorites :
 - ```GET /users/{id}/favorites```
-- ```GET /favorites/{favoritesId}```
-- ```DELETE /favorites/{favoritesId}```
+- ```GET /favorites/{id}```
+- ```DELETE /favorites/{id}```
 - ```POST /users/{id}/favorites``` <br/> 
     - ***payload***: 
     <br/>- {title, link, image?, country, publication_date, description}
+    
+#### Reviews :
+- ```GET /users/{id}/reviews```
+- ```GET /reviews/{id}```
+- ```DELETE /reviews/{id}```
+- ```POST /users/{id}/reviews``` <br/> 
+    - ***payload***: 
+    <br/>- {theme, presentation, image?, visibility_id}
+- ```PATCH /reviews/{id}``` <br/> 
+    - ***payload***: 
+    <br/>   - {theme?, presentation?, image?, visibility_id?}
+- ```POST /reviews/{id}/articles``` <br/> 
+    - **Accept**: application/json
+    - ***payload***: <br/>
+        - **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
+- ```DELETE /reviews/{id}/articles``` <br/>
 
-
-
-
-
+#### Feed :
+- ```GET /users/{id}/feed``` <br/>
+    - ***query***: ?page=1
+    
+#### Images :
+- ```GET /users/{id}/profile-picture```
+- ```PUT /users/{id}/profile-picture```<br/>
+    - **Accept**: image/jpeg, image/png, image/gif
+    - ***payload***: <br/>
+        - some binary image
 
 
 
