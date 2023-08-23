@@ -11,7 +11,7 @@ The environment mainly consists of Node, TypeScript, Hapi, Knex.
 
 This project is the main building block of the Zemus backend application, and is deployed on a cloud instance, running on Debian.
 
-The engine we used for web crawling, indexing, and search is an open source software called [OpenSearchServer](https://github.com/jaeksoft/opensearchserver). It is implemented as an independant service with its own API.
+We are currently building a solution for crawling, indexing and storing web content (news articles), based on ElasicSearch.
 
 
 ## Tech Stack
