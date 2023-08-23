@@ -11,7 +11,7 @@ The environment mainly consists of Node, TypeScript, Hapi, Knex.
 
 This project is the main building block of the Zemus backend application, and is deployed on a cloud instance, running on Debian.
 
-We are currently building a solution for crawling, indexing and storing web content (news articles), based on ElasicSearch.
+We are currently building a solution for crawling, indexing and storing web content (news articles), based on ElasticSearch.
 
 
 ## Tech Stack
