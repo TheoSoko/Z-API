@@ -103,4 +103,19 @@ export default class Checker  {
         return errors
     }
 
+
+    public sanitize (payload: UnkownIterable){
+        for (let item in payload){
+            if (this.notToEscape[item] || typeof payload[item] != "string"){
+                continue
+            }
+            payload[item] = validator.escape(payload[item] as string)
+        }
+    }
+    
+    private notToEscape: {[key: string]: boolean} = {
+        "password": true,
+        "articles": true
+    }
+
 }

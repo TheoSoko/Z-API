@@ -36,7 +36,9 @@ const init = async () => {
     server.auth.strategy('default_jwt', 'jwt', authParams)
     server.auth.default('default_jwt');
 
+    server.ext('onRequest', checkDb);
 
+    
     // Enregistrement de toutes les routes
     // Ajout de la function middleware checkDb à options.pre dans chaque config de route
     for (const category in endpoints){
