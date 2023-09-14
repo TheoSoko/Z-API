@@ -9,7 +9,6 @@ import axios, { AxiosRequestConfig } from 'axios';
 
 export default async function search(request: Request, reply: ResponseToolkit){
 
-
     if (!request.query) return boom.badData('Veuillez fournir les informations nécessaires à la recherche en paramètre d\'url')
     let errs = new Checker().check(request.query, ValidationModels.search)
     if (errs.length > 0){

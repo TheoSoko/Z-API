@@ -4,7 +4,7 @@ import Errors from '../errorHandling/errorDictionary'
 import Review from '../models/reviewModel'
 import Checker from '../errorHandling/validation'
 import ValidationModels from '../errorHandling/validationModels'
-import { ReviewInput, Article } from '../types/types'
+import { ReviewInput, Article, UnkownIterable } from '../types/types'
 import { visibility } from '../constants/constants'
 
 
@@ -87,7 +87,6 @@ export default class ReviewCtrl {
 
     public async createReviewAndArticles (req: Request, reply: ResponseToolkit) {
 
-        
         let userId = req.params?.id
         if (!userId) return Errors.no_user_id
         if (!req.payload) return Errors.no_payload
@@ -105,8 +104,12 @@ export default class ReviewCtrl {
             .code(422)
         }
 
+
         let reviewInput = req.payload as ReviewInput
-        
+
+        checker.sanitize(reviewInput) // Echappe les données (mais pas les articles)
+
+
         if (!Array.isArray(reviewInput.articles)){
             return boom.badData('le champs "articles" doit être un tableau')
         }
@@ -117,21 +120,23 @@ export default class ReviewCtrl {
             errors: string[]
         }
         let articleErrors: error[] = []
-        for (const [index, article] of reviewInput.articles.entries()){
+        for (const [index, article] of reviewInput.articles.entries()) {
             if (typeof article !== 'object'){
                 if (!isNaN(article) && Number.isInteger(article)) {
-                    continue;
+                    continue; // Si c'est un nombre, OK
                 }
                 articleErrors.push({
                     index: index,
                     errors: ["Chaque article doit être soit un nombre entier faisant référence à un id de favoris, soit un objet Article"]
                 })
+                continue
             }
             let errs = checker.check(article, ValidationModels.ReviewArticle)
             if (errs.length > 0) articleErrors.push({
                 index: index,
                 errors: errs
             })
+            checker.sanitize(article) // Echappe les caractères HTML dans chaque article
         }
 
         if (articleErrors.length > 0){
@@ -190,6 +195,7 @@ export default class ReviewCtrl {
         }
 
         let reviewInput = req.payload as ReviewInput
+        checker.sanitize(reviewInput)
 
         //Création de la revue
         let review = new Review()
@@ -206,13 +212,15 @@ export default class ReviewCtrl {
 
 
     public async postArticles (req: Request, reply: ResponseToolkit) {
-
         
         let reviewId = req.params?.reviewId
         if (!reviewId) return Errors.no_ressource_id
         if (!req.payload) return Errors.no_payload
 
         if (!Array.isArray(req.payload)) return boom.badData('Le corps de la requête doit être un tableau JSON d\'objets "Article" ou de nombre entiers faisant référence à des id de favoris')
+
+
+        let checker = new Checker()
 
         // Chaque article doit être :
         // - ou un objet valide (ValidationModels.ReviewArticle) 
@@ -221,20 +229,20 @@ export default class ReviewCtrl {
         for (const [index, article] of req.payload.entries()){
             if (typeof article !== 'object'){
                 if (!isNaN(article) && Number.isInteger(article)) {
-                    continue; // Si c'est un entier
+                    continue; // Si nombre entier, OK
                 }
                 errorList.push({
                     jsonIndex: index,
                     errors: ["Chaque article doit être soit un nombre entier faisant référence à un id de favoris, soit un objet Article"]
                 })
             }
-            let checker = new Checker()
             let errsArticle: string[] = checker.check(article, ValidationModels.ReviewArticle)
             if (errsArticle.length > 0) errorList.push({ 
                 jsonIndex: index, 
                 errors: errsArticle 
             })
         }
+
         if (errorList.length > 0){
             return reply.response({
                 statusCode: 422,
@@ -254,6 +262,9 @@ export default class ReviewCtrl {
         if (checkReview.user_id != req.auth.credentials.sub) return boom.forbidden('Vous n\'avez pas les autorisations nécessaires pour manipuler cette ressource')
 
         for (const article of verifiedArticles){
+            if (typeof article == "object") {
+                checker.sanitize(article) // Echappe les caractères HTML dans chaque valeur de l'objet article
+            }
             let created = await review.createArticle(article, reviewId).catch(() => null)
             if (created === null) {
                 return reply.response({
@@ -328,6 +339,7 @@ export default class ReviewCtrl {
 
         let instance = new Review()
         let properties = req.payload as Partial<ReviewInput>
+        checker.sanitize(properties) // Echappe les données
 
         const reviewCheck = await instance.fetchOneBasic(reviewId)
         if (!reviewCheck) return Errors.not_found_2
