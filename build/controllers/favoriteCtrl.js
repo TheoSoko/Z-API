@@ -28,16 +28,17 @@ class FavoriteCtrl {
         let id = (_a = req.params) === null || _a === void 0 ? void 0 : _a.favoriteId;
         if (!id)
             return errorDictionary_1.default.no_id;
-        const result = await new favoriteModel_1.default()
-            .fetchOne(id)
-            .catch(() => null);
-        if (result === null)
+        const fav = new favoriteModel_1.default();
+        try {
+            const result = await fav.fetchOne(id);
+            if (result === undefined)
+                return errorDictionary_1.default.not_found_2;
+            if (result.user_id != req.auth.credentials.sub)
+                return boom_1.default.forbidden('Vous n\'avez pas les autorisations nécessaires pour voir cette ressource');
+        }
+        catch (err) {
             return errorDictionary_1.default.unidentified;
-        if (result === undefined)
-            return errorDictionary_1.default.not_found_2;
-        if (result.user_id != req.auth.credentials.sub)
-            return boom_1.default.forbidden('Vous n\'avez pas les autorisations nécessaires pour voir cette ressource');
-        return result;
+        }
     }
     async deleteFavorite(req, reply) {
         var _a;
@@ -65,6 +66,7 @@ class FavoriteCtrl {
             return errorDictionary_1.default.no_id;
         if (!req.payload)
             errorDictionary_1.default.no_payload;
+        let payload = req.payload;
         let checker = new validation_1.default();
         let errorList = checker.check(req.payload, validationModels_1.default.CreateFavorite);
         if (errorList.length > 0) {
@@ -76,8 +78,9 @@ class FavoriteCtrl {
             })
                 .code(422);
         }
-        let payload = { ...req.payload, user_id: id };
-        let response = (await new favoriteModel_1.default().create(payload)
+        let favContent = { ...payload, user_id: id };
+        checker.sanitize(favContent);
+        let response = (await new favoriteModel_1.default().create(favContent)
             .then((newId) => {
             return {
                 newFavorite: `../favorites/${newId[0]}`

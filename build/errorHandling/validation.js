@@ -14,6 +14,10 @@ class Checker {
             'date': this.checkIsDate,
             'isInt': this.checkIsInt,
         };
+        this.notToEscape = {
+            "password": true,
+            "articles": true
+        };
     }
     // Fonctions de validation individuelles
     checkMaxLength(value, name, max) {
@@ -86,6 +90,14 @@ class Checker {
             !validMod[field] && errors.push(`Le champs ${field} n'est pas sensé exister`);
         }
         return errors;
+    }
+    sanitize(payload) {
+        for (let item in payload) {
+            if (this.notToEscape[item] || typeof payload[item] != "string") {
+                continue;
+            }
+            payload[item] = validator_1.default.escape(payload[item]);
+        }
     }
 }
 exports.default = Checker;

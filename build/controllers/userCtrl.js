@@ -49,6 +49,9 @@ class UserCtrl {
         if (!request.payload) {
             throw errorDictionary_1.default.no_payload;
         }
+        if (typeof request.payload != "object") {
+            throw boom_1.default.badRequest("Veuillez envoyer le payload en format application/json ou application/x-www-form-urlencoded (spécifiez dans le header Content-Type)");
+        }
         let payload = request.payload;
         let checker = new validation_1.default();
         let err = checker.check(payload, validationModels_1.default.CreateUser);
@@ -62,7 +65,7 @@ class UserCtrl {
                 .code(422);
         }
         let user = new userModel_1.default();
-        let previous = await user.fetchByEmail(payload.email, 'idOnly');
+        let previous = await user.fetchByEmail((payload).email, 'idOnly');
         if (previous != undefined) {
             return errorDictionary_1.default.existing_user;
         }
@@ -70,8 +73,11 @@ class UserCtrl {
             .catch(() => {
             throw boom_1.default.badData('Une erreur est survenue avec le mot de passe, veuillez en fournir un autre.');
         });
+        checker.sanitize(payload);
         const newUser = await user.create(payload)
-            .catch(() => { throw errorDictionary_1.default.unidentified; });
+            .catch(() => {
+            throw errorDictionary_1.default.unidentified;
+        });
         return reply.response({
             id: newUser,
             newRessource: `./users/${newUser}`
@@ -85,9 +91,8 @@ class UserCtrl {
             return errorDictionary_1.default.no_id;
         }
         return await new userModel_1.default().fetch(id)
-            .catch(() => {
-            throw errorDictionary_1.default.unidentified;
-        });
+            .then(user => user || errorDictionary_1.default.not_found_2)
+            .catch(() => errorDictionary_1.default.unidentified);
     }
     async updateUser(request, reply) {
         let payload = request.payload;
@@ -117,6 +122,7 @@ class UserCtrl {
                 return errorDictionary_1.default.existing_user;
             }
         }
+        checker.sanitize(payload);
         let updated = await user.update(userId, payload)
             .catch(() => { throw errorDictionary_1.default.unidentified; });
         return reply.response({ updatedRows: updated }).code(200);
@@ -182,8 +188,9 @@ class UserCtrl {
             return errorDictionary_1.default.no_user_id;
         let maxBytes = 2000000;
         let img = request.payload;
-        if (img.bytes > maxBytes)
+        if (img.bytes > maxBytes) {
             return boom_1.default.badData('L\'image ne peut pas faire plus de 2 Mo');
+        }
         const maxWidth = 690;
         try {
             jimp_1.default.read(img.path)

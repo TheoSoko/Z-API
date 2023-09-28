@@ -72,7 +72,7 @@ const ValidationModels = {
             maxLength: 255,
         },
         image: {
-            maxLength: 100,
+            maxLength: 1000,
         },
         visibility_id: {
             required: true,

@@ -21,19 +21,18 @@ class User {
         let fields = basicInfo
             ? ['id', 'lastname', 'firstname', 'profile_picture']
             : ['id', 'lastname', 'firstname', 'email', 'profile_picture', 'country'];
-        return new Promise(async (success, failure) => {
-            try {
-                const res = await knex_1.default.select(fields)
-                    .from('users')
-                    .where({ id: id })
-                    .first();
-                success(res);
-            }
-            catch (err) {
-                console.log(err);
-                failure(err);
-            }
-        });
+        try {
+            const res = await knex_1.default.select(fields)
+                .from('users')
+                .where({ id: id })
+                .first();
+            return Promise.resolve(res);
+        }
+        catch (err) {
+            console.log("CAUGHT EXCEPTION IN MODEL");
+            console.log(err);
+            return Promise.reject(err);
+        }
     }
     async fetchByEmail(email, idOnly) {
         let fields = idOnly ? ['id'] : ['id', 'password', 'lastname', 'firstname', 'email', 'profile_picture', 'country'];

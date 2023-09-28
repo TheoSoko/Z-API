@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const userModel_1 = __importDefault(require("../models/userModel"));
 const errorDictionary_1 = __importDefault(require("../errorHandling/errorDictionary"));
+const validator_1 = __importDefault(require("validator"));
 class MessageController {
     async getMessages(req) {
         var _a, _b;
@@ -41,9 +42,10 @@ class MessageController {
             return errorDictionary_1.default.no_id_friends;
         if (!content)
             return errorDictionary_1.default.no_payload;
-        return (new userModel_1.default().postMessage(id, friendId, content)
+        validator_1.default.escape(content);
+        return new userModel_1.default().postMessage(id, friendId, content)
             .then(() => reply.response({ newMessage: content }).code(201))
-            .catch((err) => errorDictionary_1.default[err.code] || errorDictionary_1.default.unidentified));
+            .catch((err) => errorDictionary_1.default[err.code] || errorDictionary_1.default.unidentified);
     }
 }
 exports.default = MessageController;

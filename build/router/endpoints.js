@@ -71,7 +71,10 @@ exports.endpoints = {
         {
             method: 'POST',
             path: '/users',
-            handler: user.createUser
+            handler: user.createUser,
+            options: {
+                auth: false
+            },
         },
         {
             method: 'GET',

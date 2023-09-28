@@ -38,11 +38,11 @@ class FriendCtrl {
         const friend = new friendModel_1.default();
         const friendship = await friend.fetchFriendship(id, friendId);
         //Si déjà amis : 409 Conflict
-        if (friendship !== undefined && friendship.confirmed == 1) {
+        if ((friendship === null || friendship === void 0 ? void 0 : friendship.confirmed) == 1) {
             return errorDictionary_1.default.already_friends;
         }
         //Si demande déjà envoyée par l'autre utilisateur : accepte la demande
-        if (friendship !== undefined && id == friendship.user2_id) {
+        if (id == (friendship === null || friendship === void 0 ? void 0 : friendship.user2_id)) {
             return await friend.accept(id, friendId)
                 .then(() => {
                 return {
@@ -64,7 +64,7 @@ class FriendCtrl {
             return reply.response({ newFriendship: `./users/${id}/friends/${friendId}` }).code(201);
         })
             .catch((err) => {
-            return errorDictionary_1.default[err.code] || errorDictionary_1.default.server;
+            return errorDictionary_1.default[err.code] || errorDictionary_1.default.unidentified;
         }));
     }
     async getFriendship(req) {
@@ -75,12 +75,11 @@ class FriendCtrl {
             return errorDictionary_1.default.no_id_friends;
         }
         const friend = new friendModel_1.default();
-        const response = await friend.fetchFriendship(id, friendId)
+        return await friend.fetchFriendship(id, friendId)
             .then(friendship => friendship !== null && friendship !== void 0 ? friendship : boom_1.default.notFound())
             .catch((err) => {
-            return errorDictionary_1.default[err.code] || errorDictionary_1.default.server;
+            return errorDictionary_1.default[err.code] || errorDictionary_1.default.unidentified;
         });
-        return response;
     }
     async unfriend(req) {
         var _a, _b;

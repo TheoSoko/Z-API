@@ -94,6 +94,7 @@ class ReviewCtrl {
                 .code(422);
         }
         let reviewInput = req.payload;
+        checker.sanitize(reviewInput); // Echappe les données (mais pas les articles)
         if (!Array.isArray(reviewInput.articles)) {
             return boom_1.default.badData('le champs "articles" doit être un tableau');
         }
@@ -101,12 +102,13 @@ class ReviewCtrl {
         for (const [index, article] of reviewInput.articles.entries()) {
             if (typeof article !== 'object') {
                 if (!isNaN(article) && Number.isInteger(article)) {
-                    continue;
+                    continue; // Si c'est un nombre, OK
                 }
                 articleErrors.push({
                     index: index,
                     errors: ["Chaque article doit être soit un nombre entier faisant référence à un id de favoris, soit un objet Article"]
                 });
+                continue;
             }
             let errs = checker.check(article, validationModels_1.default.ReviewArticle);
             if (errs.length > 0)
@@ -114,6 +116,7 @@ class ReviewCtrl {
                     index: index,
                     errors: errs
                 });
+            checker.sanitize(article); // Echappe les caractères HTML dans chaque article
         }
         if (articleErrors.length > 0) {
             return reply.response({
@@ -164,6 +167,7 @@ class ReviewCtrl {
                 .code(422);
         }
         let reviewInput = req.payload;
+        checker.sanitize(reviewInput);
         //Création de la revue
         let review = new reviewModel_1.default();
         let newReviewId = await review.create(reviewInput, userId).catch(() => null);
@@ -183,6 +187,7 @@ class ReviewCtrl {
             return errorDictionary_1.default.no_payload;
         if (!Array.isArray(req.payload))
             return boom_1.default.badData('Le corps de la requête doit être un tableau JSON d\'objets "Article" ou de nombre entiers faisant référence à des id de favoris');
+        let checker = new validation_1.default();
         // Chaque article doit être :
         // - ou un objet valide (ValidationModels.ReviewArticle) 
         // - ou un entier (un id de favoris)
@@ -190,14 +195,13 @@ class ReviewCtrl {
         for (const [index, article] of req.payload.entries()) {
             if (typeof article !== 'object') {
                 if (!isNaN(article) && Number.isInteger(article)) {
-                    continue; // Si c'est un entier
+                    continue; // Si nombre entier, OK
                 }
                 errorList.push({
                     jsonIndex: index,
                     errors: ["Chaque article doit être soit un nombre entier faisant référence à un id de favoris, soit un objet Article"]
                 });
             }
-            let checker = new validation_1.default();
             let errsArticle = checker.check(article, validationModels_1.default.ReviewArticle);
             if (errsArticle.length > 0)
                 errorList.push({
@@ -223,6 +227,9 @@ class ReviewCtrl {
         if (checkReview.user_id != req.auth.credentials.sub)
             return boom_1.default.forbidden('Vous n\'avez pas les autorisations nécessaires pour manipuler cette ressource');
         for (const article of verifiedArticles) {
+            if (typeof article == "object") {
+                checker.sanitize(article); // Echappe les caractères HTML dans chaque valeur de l'objet article
+            }
             let created = await review.createArticle(article, reviewId).catch(() => null);
             if (created === null) {
                 return reply.response({
@@ -292,6 +299,7 @@ class ReviewCtrl {
         }
         let instance = new reviewModel_1.default();
         let properties = req.payload;
+        checker.sanitize(properties); // Echappe les données
         const reviewCheck = await instance.fetchOneBasic(reviewId);
         if (!reviewCheck)
             return errorDictionary_1.default.not_found_2;
