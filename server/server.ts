@@ -7,6 +7,7 @@ import Jwt from '@hapi/jwt';
 import { endpoints } from './router/endpoints'
 import { authParams } from './middlewares/auth'
 import { checkDb } from './middlewares/middlewares'
+require("dotenv").config();
 
 //Gestion d'erreur à l'initialisation 
 process.on('unhandledRejection', (err) => {console.log(err);process.exit(1)})
@@ -17,7 +18,7 @@ export const pubDir = __dirname + '/public'
 const init = async () => {
 
     const server = Hapi.server({
-        port: 8080,
+        port: process.env.SERVER_PORT,
         host: 'localhost',
         routes: {
             cors: {
@@ -33,8 +34,10 @@ const init = async () => {
     await server.register(inert)
     await server.register(Jwt)
     server.auth.strategy('default_jwt', 'jwt', authParams)
-    server.auth.default('default_jwt');
-
+    
+    if (process.env.ACTIVE_AUTH == "true") {
+        //server.auth.default('default_jwt') // **____**
+    }
     server.ext('onRequest', checkDb);
 
     

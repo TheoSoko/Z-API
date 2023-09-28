@@ -1,3 +1,4 @@
+require("dotenv").config();
 import {Request, ResponseToolkit} from '@hapi/hapi'
 import Jwt, { HapiJwt } from '@hapi/jwt'
 type Artifacts = HapiJwt.Artifacts
@@ -15,7 +16,7 @@ type Artifacts = HapiJwt.Artifacts
 
 
 export const authParams = {
-    keys: 'Coffee Pot',
+    keys: process.env.TOKEN_KEY,
     verify: {
         aud: 'api.zemus.info',
         iss: 'api.zemus.info',

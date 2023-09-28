@@ -107,13 +107,12 @@ export default class UserCtrl {
 
     public async getUserById (request: Request){
         let id = request.params?.id
-        if (!id){
+        if (!id) {
             return Errors.no_id
         }
         return await new User().fetch(id)
-            .catch(() => {
-                throw Errors.unidentified
-            })
+                .then(user => user || Errors.not_found_2)
+                .catch(() => Errors.unidentified)
     }
 
 
