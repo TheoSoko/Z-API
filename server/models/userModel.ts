@@ -4,8 +4,7 @@ import { FriendShip, Message, ReviewType, UserType } from '../types/types'
 import { visibility } from '../constants/constants'
 
 
-export default class User{  
-
+export default class User {  
 
     public async create(properties: UserInput):Promise<number[]>{
         return new Promise (async (success, failure) => {
@@ -23,19 +22,18 @@ export default class User{
         let fields = basicInfo
             ? ['id', 'lastname', 'firstname', 'profile_picture']
             : ['id', 'lastname', 'firstname', 'email', 'profile_picture', 'country']
-        return new Promise (async (success, failure) => {
             try {
                 const res = await knex.select(fields)
                 .from('users')
                 .where({id: id})
                 .first()
-                success(res)
+                return Promise.resolve(res)
             }
             catch (err) {
+                console.log("CAUGHT EXCEPTION IN MODEL")
                 console.log(err)
-                failure(err)
+                return Promise.reject(err)
             }
-        })
     }
     
     public async fetchByEmail(email: string, idOnly?: 'idOnly'): Promise<UserType>{

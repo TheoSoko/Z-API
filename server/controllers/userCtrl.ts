@@ -12,6 +12,7 @@ import Checker from '../errorHandling/validation'
 import ValidationModels from '../errorHandling/validationModels'
 import { generateToken } from '../middlewares/auth'
 import knex from '../db/knex'
+import validator from 'validator'
 
 
 export default class UserCtrl {
@@ -56,9 +57,13 @@ export default class UserCtrl {
         return reply.response().code(204)
     }
 
-    public async createUser (request: Request, reply: ResponseToolkit){
+
+    public async createUser (request: Request, reply: ResponseToolkit) {
         if (!request.payload) {
             throw Errors.no_payload
+        }
+        if (typeof request.payload != "object"){
+            throw boom.badRequest("Veuillez envoyer le payload en format application/json ou application/x-www-form-urlencoded (spécifiez dans le header Content-Type)")
         }
         let payload = request.payload as UserInput
 
@@ -75,7 +80,7 @@ export default class UserCtrl {
         }
 
         let user = new User()
-        let previous = await user.fetchByEmail((payload as UserInput).email, 'idOnly')
+        let previous = await user.fetchByEmail((payload).email, 'idOnly')
         if (previous != undefined){
             return Errors.existing_user
         }
@@ -85,8 +90,12 @@ export default class UserCtrl {
                 throw boom.badData('Une erreur est survenue avec le mot de passe, veuillez en fournir un autre.')
             })
 
-        const newUser = await user.create(payload as UserInput)
-            .catch(() => { throw Errors.unidentified })
+        checker.sanitize(payload)
+
+        const newUser = await user.create(payload)
+            .catch(() => { 
+                throw Errors.unidentified 
+            })
 
         return reply.response({
                 id: newUser,
@@ -98,13 +107,12 @@ export default class UserCtrl {
 
     public async getUserById (request: Request){
         let id = request.params?.id
-        if (!id){
+        if (!id) {
             return Errors.no_id
         }
         return await new User().fetch(id)
-            .catch(() => {
-                throw Errors.unidentified
-            })
+                .then(user => user || Errors.not_found_2)
+                .catch(() => Errors.unidentified)
     }
 
 
@@ -133,10 +141,12 @@ export default class UserCtrl {
         const user = new User() 
         if (payload.email){
             let previous = await user.fetchByEmail(payload.email, 'idOnly')
-            if (previous != undefined){
+            if (previous != undefined) {
                 return Errors.existing_user
-            }    
+            }
         }
+
+        checker.sanitize(payload)
 
         let updated = await user.update(userId, payload)
             .catch(() => { throw Errors.unidentified })
@@ -212,7 +222,9 @@ export default class UserCtrl {
 
         let maxBytes = 2000000
         let img = request.payload as {path: string, bytes: number}
-        if (img.bytes > maxBytes) return boom.badData('L\'image ne peut pas faire plus de 2 Mo')
+        if (img.bytes > maxBytes) {
+            return boom.badData('L\'image ne peut pas faire plus de 2 Mo')
+        }
         
         const maxWidth = 690
 

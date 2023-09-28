@@ -5,8 +5,6 @@ import FavoriteCtrl from '../controllers/favoriteCtrl'
 import ReviewCtrl from '../controllers/reviewCtrl'
 import search from '../controllers/searchCtrl'
 import {ServerRoute, ReqRefDefaults} from '@hapi/hapi'
-import db from '../db/knex'
-import boom from '@hapi/boom'
 
 //controllers
 const user = new UserCtrl()
@@ -27,7 +25,7 @@ type Endpoints = {
 // Note :
 // Hapi/jwt vérifie le token à partir du moment ou la premiète section du chemin (e.g /users/) matche un endpoint, même si la méthode http n'est pas supportée, ou si l'url n'existe pas, résultant en de mauvais status d'erreur (401 au lieu de 404 / 405)
 
-export const endpoints:Endpoints = {
+export const endpoints: Endpoints = {
     auth: [
         {
             method: 'POST',
@@ -82,7 +80,10 @@ export const endpoints:Endpoints = {
             {
                 method: 'POST',
                 path: '/users',
-                handler: user.createUser
+                handler: user.createUser,
+                options: {
+                    auth: false
+                },
             },
             {
                 method: 'GET',

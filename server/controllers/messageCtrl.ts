@@ -2,12 +2,12 @@ import User from '../models/userModel'
 import Errors from '../errorHandling/errorDictionary'
 import { Message } from '../types/types'
 import { Request, ResponseToolkit } from '@hapi/hapi'
+import validator from "validator"
+
 
 export default class MessageController {
 
     public async getMessages(req:Request){
-
-        
         const id = req.params?.id
         const friendId = req.params?.friendId
         if (!id || !friendId) return Errors.no_id_friends
@@ -35,19 +35,18 @@ export default class MessageController {
     }
 
     public async sendMessage(req:Request, reply:ResponseToolkit){
-
-        
         const id = req.params.id
         const friendId = req.params.friendId
         const content = (req.payload as Message)?.content
+
         if (!id || !friendId) return Errors.no_id_friends
         if (!content) return Errors.no_payload
 
-        return (
-            new User().postMessage(id, friendId, content)
+        validator.escape(content)
+        
+        return new User().postMessage(id, friendId, content)
             .then(() => reply.response({newMessage: content}).code(201))
             .catch((err:{code:string}) => Errors[err.code] || Errors.unidentified)
-        )
     }
 
 }

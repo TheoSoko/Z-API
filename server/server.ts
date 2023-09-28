@@ -7,6 +7,7 @@ import Jwt from '@hapi/jwt';
 import { endpoints } from './router/endpoints'
 import { authParams } from './middlewares/auth'
 import { checkDb } from './middlewares/middlewares'
+require("dotenv").config();
 
 //Gestion d'erreur à l'initialisation 
 process.on('unhandledRejection', (err) => {console.log(err);process.exit(1)})
@@ -17,9 +18,8 @@ export const pubDir = __dirname + '/public'
 const init = async () => {
 
     const server = Hapi.server({
-        port: 80,
-        // host: '2001:41d0:304:300::11a0' || '162.19.92.192',
-        // Si on ne précise pas d'hôte, le serveur écoute sur toutes les interfaces disponibles
+        port: process.env.SERVER_PORT,
+        host: '0.0.0.0',
         routes: {
             cors: {
                 origin: ['*'],
@@ -34,9 +34,13 @@ const init = async () => {
     await server.register(inert)
     await server.register(Jwt)
     server.auth.strategy('default_jwt', 'jwt', authParams)
-    server.auth.default('default_jwt');
+    
+    if (process.env.ACTIVE_AUTH == "true") {
+        //server.auth.default('default_jwt') // **____**
+    }
+    server.ext('onRequest', checkDb);
 
-
+    
     // Enregistrement de toutes les routes
     // Ajout de la function middleware checkDb à options.pre dans chaque config de route
     for (const category in endpoints){
