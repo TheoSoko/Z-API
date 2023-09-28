@@ -36,7 +36,7 @@ const init = async () => {
     server.auth.strategy('default_jwt', 'jwt', authParams)
     
     if (process.env.ACTIVE_AUTH == "true") {
-        //server.auth.default('default_jwt') // **____**
+        server.auth.default('default_jwt') // **____**
     }
     server.ext('onRequest', checkDb);
 
