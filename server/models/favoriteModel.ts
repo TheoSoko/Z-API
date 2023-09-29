@@ -11,6 +11,7 @@ export default class Favorite {
                 .select('id', 'title', 'link', 'image', 'country', 'publication_date', 'description')
                 .from('favorites')
                 .where({user_id: userId})
+                .orderBy('publication_date', 'desc')
                  success(response)
             }
             catch (err) {

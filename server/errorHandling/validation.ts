@@ -72,7 +72,7 @@ export default class Checker  {
 
             let value = json[fieldName] as string
 
-            if (value.length == 0 ){
+            if (validMod.noEmptyStr && value.length == 0 ){
                 errors.push(`Le champs "${fieldName}" ne peut pas être une chaine vide`)
                 continue;
             }

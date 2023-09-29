@@ -32,8 +32,8 @@ export default class UserCtrl {
         if (userInfo === undefined || !await argon2.verify(userInfo.password!, payload.password)){
             return boom.unauthorized('Adresse email ou mot de passe incorrect')
         }
+
         delete userInfo.password
-        
         const token: string = generateToken(userInfo.id, payload.email)
 
         return (
@@ -43,7 +43,6 @@ export default class UserCtrl {
             })
             .code(201)
         )
-        
     }
 
     public async authFromExt (request: Request, reply: ResponseToolkit){

@@ -2,7 +2,7 @@ require("dotenv").config();
 import Knex from 'knex'
 
 
-const knex = Knex({
+const dbConnection = {
     client: 'mysql',
     connection: {
       host : process.env.DB_HOST,
@@ -11,7 +11,9 @@ const knex = Knex({
       password : process.env.DB_PASSWORD || "",
       database : process.env.DB_DATABASE
     }
-  })
+}
+
+const knex = Knex(dbConnection)
+
   
-  
-  export default knex
+export default knex
