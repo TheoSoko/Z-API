@@ -121,7 +121,6 @@ On all endpoints except mentionned :
     - **Accept**: application/json
     - ***payload***: 
     <br/> - **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
-
 - ```DELETE /reviews/{id}/articles``` <br/>
 
 
