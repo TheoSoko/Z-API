@@ -117,7 +117,14 @@ On all endpoints except mentionned :
     - **Accept**: application/json
     - ***payload***: <br/>
         - **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
+- ```POST /users/{id}/reviews/articles``` <br/> 
+    - **Accept**: application/json
+    - ***payload***: <br/>
+        - {theme, presentation, image?, visibility_id, articles}
+        - articles: **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
+
 - ```DELETE /reviews/{id}/articles``` <br/>
+
 
 #### Feed :
 - ```GET /users/{id}/feed``` <br/>
