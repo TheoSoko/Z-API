@@ -54,7 +54,7 @@ The transpilation to JS before the project builds and runs happens "under the ho
 ### Entry point :
 - URL: ```http://api.zemus.info```
 - IPv4: ```162.19.92.192```
-- Port: ```80```
+- Port: ```8080```
 
 
 ### Endpoints :
