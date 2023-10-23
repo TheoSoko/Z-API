@@ -115,8 +115,8 @@ On all endpoints except mentionned :
     <br/>   - {theme?, presentation?, image?, visibility_id?}
 - ```POST /reviews/{id}/articles``` <br/> 
     - **Accept**: application/json
-    - ***payload***: <br/>
-        - **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
+    - ***payload***: 
+     <br/> - **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
 - ```POST /reviews/{id}/articles``` <br/> 
     - **Accept**: application/json
     - ***payload***: 
