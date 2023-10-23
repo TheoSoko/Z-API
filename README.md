@@ -119,8 +119,8 @@ On all endpoints except mentionned :
         - **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
 - ```POST /reviews/{id}/articles``` <br/> 
     - **Accept**: application/json
-    - ***payload***: <br/>
-        - **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
+    - ***payload***: 
+    <br/> - **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
 
 - ```DELETE /reviews/{id}/articles``` <br/>
 
