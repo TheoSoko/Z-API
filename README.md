@@ -54,7 +54,7 @@ The transpilation to JS before the project builds and runs happens "under the ho
 ### Entry point :
 - URL: ```http://api.zemus.info```
 - IPv4: ```162.19.92.192```
-- Port: ```80```
+- Port: ```8080```
 
 
 ### Endpoints :
@@ -115,9 +115,15 @@ On all endpoints except mentionned :
     <br/>   - {theme?, presentation?, image?, visibility_id?}
 - ```POST /reviews/{id}/articles``` <br/> 
     - **Accept**: application/json
+    - ***payload***: 
+     <br/> - **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
+- ```POST /users/{id}/reviews/articles``` <br/> 
+    - **Accept**: application/json
     - ***payload***: <br/>
-        - **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
+        - {theme, presentation, image?, visibility_id, articles} <br/>
+        - articles: **Array of** __[__ FavoriteId: (int) **OR** {title, link, image?, country?, description?, publication_date} __]__
 - ```DELETE /reviews/{id}/articles``` <br/>
+
 
 #### Feed :
 - ```GET /users/{id}/feed``` <br/>
@@ -140,3 +146,6 @@ Le process lié au service est relancé au démarrage du serveur, grâce à PM2.
 
 __Pour transpiler le projet dans build (en prod) :__
 ```tsc --project tsconfig.production.json```
+
+
+
