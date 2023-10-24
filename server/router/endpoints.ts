@@ -123,6 +123,11 @@ export const endpoints: Endpoints = {
                 path: '/users/{id}/friends/{friendId}',
                 handler: friend.unfriend
             },
+            {
+            method: 'GET',
+            path: '/users/{id}/friends/requests',
+            handler: friend.getInvitations
+            },
         ],
     messages: 
         [

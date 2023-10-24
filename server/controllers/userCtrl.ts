@@ -41,7 +41,6 @@ export default class UserCtrl {
                 user: userInfo,
                 token: token
             })
-            .code(201)
         )
     }
 

@@ -105,11 +105,16 @@ export default async function search(request: Request, reply: ResponseToolkit){
       let response = await axios(config)
       .catch((err) => { console.log(err.response); return null })
 
-      if (!response){
-        return 'pas de réponse'
-      }
+    console.log("request.headers['origin']", request.headers['origin'])
 
-      console.log(response)
+      if (!response){
+        return reply.response("Rien à retourner")
+        .header("Access-Control-Allow-Origin", 'www.something.com', {append: true})
+        .header("Access-Control-Expose-Headers", "Access-Control-Allow-Origin", {append: true} )
+        .header("Vary", "Origin", {append: true} )
+
+    }
+
 
 
 

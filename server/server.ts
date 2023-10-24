@@ -23,11 +23,12 @@ const init = async () => {
         routes: {
             cors: {
                 origin: ['*'],
-                headers: ['Accept', 'Authorization', 'Content-Type', 'If-None-Match'], //default
+                headers: ['Access-Control-Allow-Origin', 'Accept', 'Authorization', 'Content-Type', 'If-None-Match'], //default
             },
             files: {
                 relativeTo: Path.join(__dirname, 'public')
             },
+            
         }
     })
 
@@ -39,7 +40,10 @@ const init = async () => {
         server.auth.default('default_jwt') // **____**
     }
     server.ext('onRequest', checkDb);
-
+    server.ext('onPreResponse', (req: Request, h: ResponseToolkit) => {
+        //h.response.bind({Headers: {...Headers.prototype, "Access-Control-Allow-Origin": "*"}})
+        return h.continue
+    })
     
     // Enregistrement de toutes les routes
     // Ajout de la function middleware checkDb à options.pre dans chaque config de route

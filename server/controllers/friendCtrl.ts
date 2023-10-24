@@ -89,7 +89,7 @@ export default class FriendCtrl {
             })
     }
 
-    public async unfriend (req: Request){
+    public async unfriend (req: Request) {
         const id = req.params?.id
         const friendId = req.params?.friendId
         
@@ -100,5 +100,18 @@ export default class FriendCtrl {
         let response = await new Friend().remove(id, friendId)
         return {affectedRows: response}
     }
+
+    public async getInvitations (req: Request, h: ResponseToolkit) {
+        const id = req.params?.id
+        
+        if (!id){
+            return Errors.no_id
+        }
+
+        let response = await new Friend().fetchInvitations(id)
+
+        return h.response({friend_requests: response}).code(200)
+    }
+
 
 }
