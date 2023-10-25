@@ -19,6 +19,9 @@ export default class FriendCtrl {
 
         const friendList = []
         for (const fr of friendships){
+            if (!fr.confirmed) {
+                continue
+            }
             let friendId = (senderId == fr.user1_id) 
                 ? fr.user2_id
                 : fr.user1_id
