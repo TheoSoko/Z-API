@@ -104,7 +104,7 @@ export default class FriendCtrl {
     public async getInvitations (req: Request, h: ResponseToolkit) {
         const id = req.params?.id
         
-        if (!id){
+        if (!id) {
             return Errors.no_id
         }
 

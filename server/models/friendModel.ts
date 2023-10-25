@@ -79,7 +79,8 @@ export default class Friend {
     public async fetchInvitations(id:number): Promise<FriendShip[]>{
         try {
             const res = await knex('friendships')
-            .select('')
+            .join('users', 'users.id', '=', 'friendships.user1_id')
+            .select('users.id', 'users.firstname', 'users.lastname', 'users.email', 'users.profile_picture', 'users.country')
             .where({user2_id: id})
             .andWhere({confirmed: false})
             return new Promise(success => success(res))
